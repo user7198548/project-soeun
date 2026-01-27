@@ -25,6 +25,9 @@ public class AuthService {
 
     public void signup(SignupRequest req) {
 
+        boolean isFirstUser = userRepository.count() == 0;
+        String role = isFirstUser ? "ADMIN" : "USER";
+
         if (userRepository.existsByEmail((req.email))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 가입된 이메일입니다.");
         }
@@ -54,6 +57,8 @@ public class AuthService {
         }
 
         session.setAttribute(SESSION_USER_ID, user.getId());
+        //admin 체크
+        session.setAttribute("role", user.getRole());
     }
 
     public void logout(HttpSession session) {
