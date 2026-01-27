@@ -68,6 +68,7 @@
 #### 1) 패키지 구조 정리
 
 **정리된 패키지 구조**
+```
 com.soeun.project_soeun
 ├─ controller
 ├─ service
@@ -75,7 +76,7 @@ com.soeun.project_soeun
 ├─ domain
 ├─ dto
 └─ config
-
+```
 
 **결정 이유**
 - 스프링 컴포넌트 스캔 누락으로 인한 API 미동작 방지
@@ -124,6 +125,7 @@ com.soeun.project_soeun
 ### 오늘 목표
 - 인증 기능 구현을 위한 기반 작업
 - Repository, 보안 의존성, 서비스 설계 이해
+- 사용자 관리(User Management) 조회 API 구현 시작
 
 ---
 
@@ -133,32 +135,74 @@ com.soeun.project_soeun
 - `UserRepository` 생성
 - `JpaRepository<User, Long>` 상속
 
+#### 2) 회원가입(Sign up) / 로그인(Login) API 구현
+- 회원가입 API (`POST /api/auth/signup`) 구현  
+- 로그인 API (`POST /api/auth/login`) 구현  
+  - 이메일/비밀번호 검증
+  - 로그인 성공 시 HttpSession에 userId, role 저장  
+- 로그아웃 API (`POST /api/auth/logout`) 구현  
+  - session.invalidate()를 통해 세션 무효화  
+- 내 정보 조회 API (`GET /api/me`) 구현  
+  - 세션에 userId가 없을 경우 401 반환
+  - 로그인 상태일 경우 사용자 기본 정보 반환
+
+#### 3) 관리자(ADMIN) / 일반 사용자(USER) 역할 개념 도입
+- User 엔티티에 role 컬럼 존재 확인  
+- 개발 단계에서 관리자 계정 테스트를 위해  
+  - DBeaver에서 특정 계정의 role을 ADMIN으로 직접 수정  
+- 로그인 시 세션에 role 값을 함께 저장하여  
+  이후 API 접근 제어에 활용하도록 설계  
+
+#### 4) 사용자 목록 조회 API (관리자 전용) 구현
+- `GET /api/users` 엔드포인트 구현  
+- 관리자(ADMIN)만 접근 가능하도록 권한 체크 로직 추가  
+- Pageable을 이용한 페이지네이션 적용  
+  - page, size 파라미터 기반 조회 가능  
+- User 엔티티를 그대로 반환하지 않고  
+  UserListItemResponse DTO로 변환하여 응답하도록 설계  
+
+#### 5) 사용자 목록 검색 조건 확장
+- 검색 조건을 optional query parameter로 설계  
+  - email (부분 일치)
+  - name (부분 일치)
+  - role (ADMIN / USER)
+  - createdAt 기간(from ~ to)  
+- JpaSpecificationExecutor를 이용한 동적 쿼리 구성  
+- Specification을 조합하여 검색 조건이 있을 때만 필터가 적용되도록 구현  
+- `Specification.allOf()` 방식을 사용하여  
+  deprecated API 경고를 회피하고 안정적인 조건 결합 구조로 개선  
+
+#### 6) 회원가입 비밀번호 정책 추가
+- 회원가입 요청 DTO(SignupRequest)에 Bean Validation 적용  
+- 비밀번호 정책:
+  - 8자 이상
+  - 영문 + 숫자 포함  
+- `@Pattern` 애노테이션을 이용해 DTO 레벨에서 검증 처리  
+- 잘못된 비밀번호 입력 시 400 Bad Request 반환 확인
+
+#### 7) Postman을 이용한 API 동작 검증
+- Postman을 이용해 회원가입 요청 전송  
+  - 실제 DB(users 테이블)에 사용자 데이터가 저장됨을 확인  
+- 로그인 요청 시 JSESSIONID 쿠키가 생성되는 것을 확인  
+- 로그인 상태에서 `/api/me` 호출 시 200 OK 반환 확인  
+- 로그아웃 후 `/api/me` 호출 시 401 Unauthorized 반환 확인  
+- 관리자 계정으로 로그인 후 `/api/users` 호출 성공 확인  
+- 페이지네이션 응답 구조(content, totalElements, totalPages 등) 확인  
+- role, email 등의 검색 조건이 정상적으로 적용되는 것을 확인  
+
+→ 세션 기반 인증 흐름 및 사용자 관리 조회 기능이 정상적으로 동작함을 검증함
+
+---
+
 ### 정리
-
-#### 1) Repository 동작 방식 이해
-- `JpaRepository`를 상속한 Repository 인터페이스는
-  - 스프링이 애플리케이션 실행 시점에
-  - 런타임 프록시 기반 구현체를 자동 생성하여 주입함
-- 이를 통해 기본 CRUD(`save`, `findById`, `findAll` 등)를
-  별도의 구현 없이 사용할 수 있음을 확인함
-
----
-
-#### 2) 비밀번호 처리 방식 결정
-- Spring Security 전체 기능은 사용하지 않기로 결정
-- `spring-security-crypto` 모듈만 사용하여
-  - `BCryptPasswordEncoder` 기반 비밀번호 해시 처리 적용
-
-**결정 이유**
-- 과제 요구사항에 불필요한 보안 설정 및 복잡도 최소화
-- 인증 로직의 핵심 요소인
-  - “비밀번호 해시 저장 및 검증”에만 집중하기 위함
-
----
-
-#### 3) Gradle 의존성 추가 및 이슈 해결
-- `spring-security-crypto` 의존성 추가 후,
-  다음 오류 발생:
-
-
-
+- Postman은 단순 테스트 도구가 아니라 실제 HTTP 요청을 전송하며  
+  서버 로직과 DB에 그대로 반영된다는 점을 명확히 이해함  
+- 세션 기반 인증 구조에서  
+  - 로그인 시 세션 생성
+  - 쿠키(JSESSIONID) 기반 상태 유지
+  - 로그아웃 시 세션 무효화  
+  전체 흐름을 직접 검증하며 이해함  
+- 사용자 관리 기능 구현 시  
+  엔티티와 응답 DTO를 분리하는 구조의 필요성을 체감함  
+- 관리자/일반 사용자 권한 분기를  
+  세션 정보(role, userId)를 기준으로 처리하는 구조를 확립함
