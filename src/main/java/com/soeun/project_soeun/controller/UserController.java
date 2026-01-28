@@ -5,6 +5,7 @@ import com.soeun.project_soeun.dto.UserListItemResponse;
 import com.soeun.project_soeun.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -32,6 +34,12 @@ public class UserController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             Pageable pageable, HttpSession session) {
+
+        log.info("[USER-LIST] userId={} role={} page={}",
+                session.getAttribute("userId"),
+                session.getAttribute("role"),
+                pageable);
+
         requireAdmin(session);
         return userService.search(email, name, role, from, to, pageable);
     }
