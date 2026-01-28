@@ -1,9 +1,12 @@
 package com.soeun.project_soeun.service;
 
 import com.soeun.project_soeun.domain.user.User;
+import com.soeun.project_soeun.dto.UpdateActiveRequest;
+import com.soeun.project_soeun.dto.UpdateUserRequest;
 import com.soeun.project_soeun.dto.UserDetailResponse;
 import com.soeun.project_soeun.dto.UserListItemResponse;
 import com.soeun.project_soeun.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,4 +76,38 @@ public class UserService {
         );
     }
 
+    @Transactional
+    public UserDetailResponse updateActive(Long id, UpdateActiveRequest req) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
+        user.setActive(req.isActive());
+
+        userRepository.save(user);
+
+        return toDetailResponse(user);
+    }
+
+    @Transactional
+    public UserDetailResponse updateUser(Long id, UpdateUserRequest req) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
+        user.setName(req.getName());
+        userRepository.save(user);
+
+        return toDetailResponse(user);
+    }
+
+    private UserDetailResponse toDetailResponse(User user) {
+        return new UserDetailResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                (user.getRole() != null ? user.getRole().toString() : null),
+                user.isActive(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
+    }
 }
