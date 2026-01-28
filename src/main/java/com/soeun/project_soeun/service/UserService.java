@@ -104,7 +104,7 @@ public class UserService {
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
-                (user.getRole() != null ? user.getRole().toString() : null),
+                (user.getRole() != null ? user.getRole() : null),
                 user.isActive(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
