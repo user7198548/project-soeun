@@ -1,28 +1,29 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { api } from "./api";
+import { useApiCall } from "./useApiCall";
 
-export default function Login({ onSuccess }: { onSuccess: () => void }) {
+export default function Login({ onSuccess }: { onSuccess: () => Promise<void> }) {
   const navigate = useNavigate();
+  const { busy, error, run } = useApiCall();
   
   const [email, setEmail] = useState("admin@test.com");
   const [password, setPassword] = useState("1234");
-  const [error, setError] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    try {
+    
+    const ok = await run(async () => {
       await api<void>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
+      });
+      await onSuccess();
+      navigate("/users", { replace: true });
+      return true;
     });
-    await onSuccess();
 
-    navigate("/users", { replace: true });
-    } catch (err: any) {
-      setError(err.message ?? String(err));
-    }
+    if (!ok) return;
   };
 
   return (
@@ -37,7 +38,9 @@ export default function Login({ onSuccess }: { onSuccess: () => void }) {
           <div>비밀번호</div>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: "100%", padding: 8 }} />
         </div>
-        <button type="submit" style={{ padding: "8px 12px" }}>로그인</button>
+        <button type="submit" style={{ padding: "8px 12px" }}>
+        {busy ? "로그인중..." : "로그인"}
+        </button>
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <hr style={{ margin: "16px 0" }} />

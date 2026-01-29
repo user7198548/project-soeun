@@ -1,30 +1,33 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "./api";
+import { useApiCall } from "./useApiCall";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { busy, error, run } = useApiCall();
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-
-    try {
+    
+    const ok = await run(async () => {
       await api<void>("/api/auth/signup", {
         method: "POST",
         body: JSON.stringify({ email, name, password }),
       });
-
-      // 회원가입 후 로그인 화면으로
-      navigate("/login");
-    } catch (err: any) {
-      setError(err.message ?? String(err));
-    }
+      return true;
+    });
+    // 회원가입 후 로그인 화면으로
+    navigate("/login");
+    
+    if (!ok) return;
+    navigate("/login");
+      
   };
 
   return (
@@ -34,22 +37,38 @@ export default function Signup() {
       <form onSubmit={submit}>
         <div style={{ marginBottom: 12 }}>
           <div>이메일</div>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input value={email} onChange={(e) => setEmail(e.target.value)} 
+            style={{ width: "100%", padding: 8 }}
+            placeholder="email@example.com"
+          />
         </div>
 
         <div style={{ marginBottom: 12 }}>
           <div>이름</div>
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+          <input value={name} onChange={(e) => setName(e.target.value)} 
+            style={{ width: "100%", padding: 8 }}
+            placeholder="홍길동"
+          />
         </div>
 
         <div style={{ marginBottom: 12 }}>
           <div>비밀번호</div>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input type="password" value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+            style={{ width: "100%", padding: 8 }}
+            placeholder="영문+숫자 포함 8자 이상"
+          />
         </div>
 
-        <button type="submit">회원가입</button>
+        <button type="submit"  disabled={busy} style={{ padding: "8px 12px" }}>
+          {busy ? "가입중..." : "회원가입"}
+        </button>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && (
+          <p style={{ color: "red", whiteSpace: "pre-wrap", marginTop: 12 }}>
+            {error}
+          </p>
+        )}
       </form>
 
       <hr style={{ margin: "16px 0" }} />

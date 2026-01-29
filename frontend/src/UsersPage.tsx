@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "./api";
+import { useApiCall } from "./useApiCall";
 
 type MeResponse = { id: number; email: string; name: string; role: string };
 
@@ -30,7 +31,7 @@ function buildQuery(params: Record<string, string | undefined>) {
 }
 
 export default function UsersPage({ me }: { me: MeResponse }) {
-  const [error, setError] = useState("");
+  const { busy, error, setError, run } = useApiCall();
   const [busyId, setBusyId] = useState<number | null>(null);
 
   // filters
@@ -61,24 +62,21 @@ export default function UsersPage({ me }: { me: MeResponse }) {
   );
 
   const load = async () => {
-    setError("");
-    try {
-      const res = await api<Page<UserListItemResponse>>(`/api/users?${queryString}`);
-      setData(res);
-    } catch (err: any) {
-      setError(err.message ?? String(err));
-    }
+    const res = await run(async () => {
+      return await api<Page<UserListItemResponse>>(`/api/users?${queryString}`);
+    });
+    if (res) setData(res);
   };
 
   useEffect(() => {
-    // 최초 로드 + 페이지 바뀔 때 자동 조회
+    // ADMIN만 조회 가능
+    if (me.role !== "ADMIN") return;
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const onSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(0); // 검색하면 0페이지로
+    setPage(0); 
     await load();
   };
 
@@ -95,17 +93,19 @@ export default function UsersPage({ me }: { me: MeResponse }) {
   const setActive = async (id: number, active: boolean) => {
     setBusyId(id);
     setError("");
-    try {
-      await api(`/api/users/${id}/active`, {
+
+    const ok = await run(async () => {
+      await api<void>(`/api/users/${id}/active`, {
         method: "PATCH",
         body: JSON.stringify({ active }),
       });
-      await load();
-    } catch (err: any) {
-      setError(err.message ?? String(err));
-    } finally {
-      setBusyId(null);
-    }
+      return true;
+    });
+
+    setBusyId(null);
+
+    if (!ok) return;
+    await load();
   };
 
   if (me.role !== "ADMIN") {
@@ -136,15 +136,27 @@ export default function UsersPage({ me }: { me: MeResponse }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 180px", gap: 10 }}>
           <div>
             <div style={{ fontSize: 12, color: "#555" }}>email</div>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: "100%", padding: 8 }} />
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ width: "100%", padding: 8 }}
+            />
           </div>
           <div>
             <div style={{ fontSize: 12, color: "#555" }}>name</div>
-            <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: "100%", padding: 8 }} />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{ width: "100%", padding: 8 }}
+            />
           </div>
           <div>
             <div style={{ fontSize: 12, color: "#555" }}>role</div>
-            <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: "100%", padding: 8 }}>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              style={{ width: "100%", padding: 8 }}
+            >
               <option value="">ALL</option>
               <option value="ADMIN">ADMIN</option>
               <option value="USER">USER</option>
@@ -155,16 +167,32 @@ export default function UsersPage({ me }: { me: MeResponse }) {
         <div style={{ display: "grid", gridTemplateColumns: "220px 220px 1fr", gap: 10 }}>
           <div>
             <div style={{ fontSize: 12, color: "#555" }}>from</div>
-            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} style={{ width: "100%", padding: 8 }} />
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              style={{ width: "100%", padding: 8 }}
+            />
           </div>
           <div>
             <div style={{ fontSize: 12, color: "#555" }}>to</div>
-            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} style={{ width: "100%", padding: 8 }} />
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              style={{ width: "100%", padding: 8 }}
+            />
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "end" }}>
-            <button type="submit">검색</button>
-            <button type="button" onClick={onReset}>초기화</button>
-            <button type="button" onClick={load}>새로고침</button>
+            <button type="submit" disabled={busy}>
+              {busy ? "검색중..." : "검색"}
+            </button>
+            <button type="button" onClick={onReset} disabled={busy}>
+              초기화
+            </button>
+            <button type="button" onClick={load} disabled={busy}>
+              새로고침
+            </button>
           </div>
         </div>
       </form>
@@ -176,20 +204,20 @@ export default function UsersPage({ me }: { me: MeResponse }) {
       )}
 
       {!data ? (
-        <p>로딩중...</p>
+        <p>{busy ? "로딩중..." : "데이터가 없습니다."}</p>
       ) : (
         <>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <div>Total: {data.totalElements}</div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <button disabled={busy || page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 이전
               </button>
               <span>
                 {data.number + 1} / {data.totalPages || 1}
               </span>
               <button
-                disabled={data.totalPages === 0 || page >= data.totalPages - 1}
+                disabled={busy || data.totalPages === 0 || page >= data.totalPages - 1}
                 onClick={() => setPage((p) => p + 1)}
               >
                 다음
@@ -225,11 +253,17 @@ export default function UsersPage({ me }: { me: MeResponse }) {
 
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   {u.active ? (
-                    <button disabled={busyId === u.id} onClick={() => setActive(u.id, false)}>
+                    <button
+                      disabled={busy || busyId === u.id}
+                      onClick={() => setActive(u.id, false)}
+                    >
                       {busyId === u.id ? "처리중..." : "비활성화"}
                     </button>
                   ) : (
-                    <button disabled={busyId === u.id} onClick={() => setActive(u.id, true)}>
+                    <button
+                      disabled={busy || busyId === u.id}
+                      onClick={() => setActive(u.id, true)}
+                    >
                       {busyId === u.id ? "처리중..." : "활성화"}
                     </button>
                   )}

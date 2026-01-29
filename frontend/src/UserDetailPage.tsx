@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "./api";
+import { useApiCall } from "./useApiCall";
 
-type MeResponse = { id: number; email: string; name: string; role: string };
+type MeResponse = {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+};
 
 type UserDetailResponse = {
   id: number;
@@ -19,9 +25,10 @@ export default function UserDetailPage({ me }: { me: MeResponse }) {
   const userId = Number(id);
   const nav = useNavigate();
 
+  // ✅ 공통 API 호출 상태/에러 통일
+  const { busy, error, setError, run } = useApiCall();
+
   const [data, setData] = useState<UserDetailResponse | null>(null);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
@@ -29,57 +36,59 @@ export default function UserDetailPage({ me }: { me: MeResponse }) {
   const canEditName = useMemo(() => {
     if (!data) return false;
     return me.role === "ADMIN" || me.id === data.id;
-  }, [me, data]);  
+  }, [me, data]);
 
   const load = async () => {
+    // run()이 내부에서 error 초기화도 해주지만,
+    // “새로고침”/“취소 후 다시 불러오기” 흐름에서 명확히 하고 싶으면 setError("") 해도 됨
     setError("");
-    try {
-      const res = await api<UserDetailResponse>(`/api/users/${userId}`);
-      setData(res);
-      setName(res.name);
-    } catch (err: any) {
-      setError(err.message ?? String(err));
-    }
+
+    const res = await run(async () => {
+      return await api<UserDetailResponse>(`/api/users/${userId}`);
+    });
+
+    if (!res) return;
+    setData(res);
+    setName(res.name);
   };
 
   useEffect(() => {
     if (!Number.isFinite(userId)) return;
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-    const saveName = async () => {
+  const saveName = async () => {
     if (!data) return;
-    setBusy(true);
-    setError("");
-    try {
-      await api(`/api/users/${data.id}`, {
+    if (!canEditName) return;
+
+    const ok = await run(async () => {
+      await api<void>(`/api/users/${data.id}`, {
         method: "PATCH",
         body: JSON.stringify({ name }),
       });
-      await load();  
-      setEditing(false);
-    } catch (err: any) {
-      setError(err.message ?? String(err));
-    } finally {
-      setBusy(false);
-    }
+      return true;
+    });
+
+    if (!ok) return;
+    await load();
+    setEditing(false);
   };
 
   const setActive = async (active: boolean) => {
-    setBusy(true);
-    setError("");
-    try {
-      if (!data) return;
-      await api(`/api/users/${data.id}/active`, {
+    if (!data) return;
+    if (me.role !== "ADMIN") return;
+
+    const ok = await run(async () => {
+      await api<void>(`/api/users/${data.id}/active`, {
         method: "PATCH",
         body: JSON.stringify({ active }),
       });
-      await load();
-    } catch (err: any) {
-      setError(err.message ?? String(err));
-    } finally {
-      setBusy(false);
-    }
+      return true;
+    });
+
+    if (!ok) return;
+    await load();
   };
 
   return (
@@ -90,13 +99,20 @@ export default function UserDetailPage({ me }: { me: MeResponse }) {
       </div>
 
       {error && (
-        <pre style={{ background: "#f7f7f7", padding: 12, borderRadius: 8, whiteSpace: "pre-wrap" }}>
+        <pre
+          style={{
+            background: "#f7f7f7",
+            padding: 12,
+            borderRadius: 8,
+            whiteSpace: "pre-wrap",
+          }}
+        >
           {error}
         </pre>
       )}
 
       {!data ? (
-        <p>로딩중...</p>
+        <p>{busy ? "로딩중..." : "데이터가 없습니다."}</p>
       ) : (
         <div style={{ border: "1px solid #eee", borderRadius: 12, padding: 16, maxWidth: 560 }}>
           {/* NAME */}
@@ -106,9 +122,7 @@ export default function UserDetailPage({ me }: { me: MeResponse }) {
             {!editing ? (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div>{data.name}</div>
-                {canEditName && (
-                  <button onClick={() => setEditing(true)}>수정</button>
-                )}
+                {canEditName && <button onClick={() => setEditing(true)}>수정</button>}
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -126,6 +140,7 @@ export default function UserDetailPage({ me }: { me: MeResponse }) {
                   onClick={() => {
                     setName(data.name);
                     setEditing(false);
+                    setError("");
                   }}
                   disabled={busy}
                 >
@@ -136,11 +151,21 @@ export default function UserDetailPage({ me }: { me: MeResponse }) {
           </div>
 
           {/* STATIC FIELDS */}
-          <div style={{ marginBottom: 6 }}><b>Email</b>: {data.email}</div>
-          <div style={{ marginBottom: 6 }}><b>Role</b>: {data.role}</div>
-          <div style={{ marginBottom: 6 }}><b>Active</b>: {String(data.active)}</div>
-          <div style={{ marginBottom: 6 }}><b>Created</b>: {data.createdAt}</div>
-          <div style={{ marginBottom: 12 }}><b>Updated</b>: {data.updatedAt}</div>
+          <div style={{ marginBottom: 6 }}>
+            <b>Email</b>: {data.email}
+          </div>
+          <div style={{ marginBottom: 6 }}>
+            <b>Role</b>: {data.role}
+          </div>
+          <div style={{ marginBottom: 6 }}>
+            <b>Active</b>: {String(data.active)}
+          </div>
+          <div style={{ marginBottom: 6 }}>
+            <b>Created</b>: {data.createdAt}
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <b>Updated</b>: {data.updatedAt}
+          </div>
 
           {/* ACTIVE TOGGLE (ADMIN ONLY) */}
           {me.role === "ADMIN" && (
