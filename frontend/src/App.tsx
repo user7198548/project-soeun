@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import UsersPage from "./UsersPage";
-import UserDetailPage from "./UserDetailPage";
 import { api } from "./api";
 import MainPage from "./MainPage";
 
@@ -77,10 +76,6 @@ export default function App() {
         <Route
           path="/users"
           element={me ? <UsersPage me={me} /> : <Navigate to="/" replace />}
-        />
-        <Route
-          path="/users/:id"
-          element={me ? <UserDetailPage me={me} /> : <Navigate to="/" replace />}
         />
 
         {/* (선택) 직접 /login, /signup 들어오면 홈으로 보내기 */}

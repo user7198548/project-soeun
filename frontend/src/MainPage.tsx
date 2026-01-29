@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Modal from "./Modal";
 import Login from "./Login";
 import Signup from "./Signup";
+import UserDetailModal from "./UserDetailPage";
 
 type MeResponse = {
   id: number;
@@ -23,12 +24,21 @@ export default function MainPage({
   const navigate = useNavigate();
   const [authModal, setAuthModal] = useState<AuthModal>("closed");
 
+  const [myDetailOpen, setMyDetailOpen] = useState(false);
+
   const close = () => setAuthModal("closed");
 
-  const goAfterLogin = (m: MeResponse) => {
-    const role = (m.role || "").toUpperCase();
-    if (role === "ADMIN") navigate("/users", { replace: true });
-    else navigate(`/users/${m.id}`, { replace: true });
+    const openMyPage = () => {
+    if (!me) return;
+
+    const role = (me.role || "").toUpperCase();
+
+    // ✅ 정책: ADMIN이면 /users로 이동, USER면 내 디테일 모달
+    if (role === "ADMIN") {
+      navigate("/users", { replace: true });
+    } else {
+      setMyDetailOpen(true); // ✅ 모달 열기
+    }
   };
 
   const title = useMemo(() => {
@@ -47,7 +57,7 @@ export default function MainPage({
             현재 로그인: <b>{me.email}</b> ({me.role})
           </p>
           <button
-            onClick={() => goAfterLogin(me)}
+            onClick={openMyPage}
             style={{ padding: "10px 14px" }}
           >
             내 페이지로 이동
@@ -71,14 +81,20 @@ export default function MainPage({
         {authModal === "login" ? (
           <Login
             onSuccess={async () => {
-                const me = await refreshMe(); // 👈 /api/me 호출
-                if (!me) return;
+              const newMe = await refreshMe(); // 👈 /api/me 호출
+              if (!newMe) return;
 
-                    if (me.role === "ADMIN") {
-                    navigate("/users", { replace: true });
-                    } else { // USER 포함 나머지
-                    navigate(`/users/${me.id}`, { replace: true });
-                    }                
+              const role = (newMe.role || "").toUpperCase();
+
+              if (role === "ADMIN") {
+                navigate("/users", { replace: true });
+              } else {
+                // ✅ 로그인 성공하면 "내 상세 모달" 바로 띄우기
+                setMyDetailOpen(true);
+              }
+
+              // (선택) 로그인 모달 닫기
+              close();
             }}
             onGoSignup={() => setAuthModal("signup")}
             onGoHome={close}
@@ -91,6 +107,19 @@ export default function MainPage({
           />
         )}
       </Modal>
+
+      {me && (
+        <UserDetailModal
+          open={myDetailOpen}
+          onClose={() => setMyDetailOpen(false)}
+          me={me}
+          userId={me.id}
+          onUpdated={async () => {
+            // (선택) 내 정보 바뀌면 헤더/메인 표시 갱신
+            await refreshMe();
+          }}
+        />
+      )}
     </div>
   );
 }

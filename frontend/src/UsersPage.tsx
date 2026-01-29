@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { api } from "./api";
 import { useApiCall } from "./useApiCall";
+import UserDetailModal from "./UserDetailPage";
 
 type MeResponse = { id: number; email: string; name: string; role: string };
 
@@ -33,6 +33,9 @@ function buildQuery(params: Record<string, string | undefined>) {
 export default function UsersPage({ me }: { me: MeResponse }) {
   const { busy, error, setError, run } = useApiCall();
   const [busyId, setBusyId] = useState<number | null>(null);
+
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   // filters
   const [email, setEmail] = useState("");
@@ -107,6 +110,12 @@ export default function UsersPage({ me }: { me: MeResponse }) {
     if (!ok) return;
     await load();
   };
+
+  const openDetail = (id: number) => {
+    setSelectedUserId(id);
+    setDetailOpen(true);
+  };
+
 
   if (me.role !== "ADMIN") {
     return (
@@ -229,6 +238,7 @@ export default function UsersPage({ me }: { me: MeResponse }) {
             {data.content.map((u) => (
               <div
                 key={u.id}
+                onClick={() => openDetail(u.id)}
                 style={{
                   border: "1px solid #ddd",
                   borderRadius: 12,
@@ -238,12 +248,11 @@ export default function UsersPage({ me }: { me: MeResponse }) {
                   alignItems: "center",
                 }}
               >
-                {/* 카드 클릭 -> 상세 이동 */}
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 700 }}>
-                    <Link to={`/users/${u.id}`} style={{ textDecoration: "none" }}>
+                    
                       #{u.id} {u.name} ({u.role})
-                    </Link>
+                    
                   </div>
                   <div style={{ fontSize: 14, color: "#555" }}>{u.email}</div>
                   <div style={{ fontSize: 12, color: "#777" }}>
@@ -255,7 +264,10 @@ export default function UsersPage({ me }: { me: MeResponse }) {
                   {u.active ? (
                     <button
                       disabled={busy || busyId === u.id}
-                      onClick={() => setActive(u.id, false)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActive(u.id, false)
+                      }}
                     >
                       {busyId === u.id ? "처리중..." : "비활성화"}
                     </button>
@@ -273,6 +285,18 @@ export default function UsersPage({ me }: { me: MeResponse }) {
           </div>
         </>
       )}
+
+      {selectedUserId !== null && (
+        <UserDetailModal
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
+          me={me}
+          userId={selectedUserId}
+          onUpdated={async () => {
+            await load();
+          }}
+        />
+      )}      
     </div>
   );
 }
