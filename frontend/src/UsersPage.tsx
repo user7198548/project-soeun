@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "./api";
 import { useApiCall } from "./useApiCall";
 import UserDetailModal from "./UserDetailPage";
+import { useNavigate } from "react-router-dom";
 
 type MeResponse = { id: number; email: string; name: string; role: string };
 
@@ -49,6 +50,7 @@ export default function UsersPage({ me }: { me: MeResponse }) {
   const size = 10;
 
   const [data, setData] = useState<Page<UserListItemResponse> | null>(null);
+  const navigate = useNavigate();
 
   const queryString = useMemo(
     () =>
@@ -65,6 +67,9 @@ export default function UsersPage({ me }: { me: MeResponse }) {
   );
 
   const load = async () => {
+    setError("");
+    if (!validateDateRange()) return;
+    
     const res = await run(async () => {
       return await api<Page<UserListItemResponse>>(`/api/users?${queryString}`);
     });
@@ -77,13 +82,36 @@ export default function UsersPage({ me }: { me: MeResponse }) {
     load();
   }, [page]);
 
+  const validateDateRange = () => {
+
+    if (!from && !to) {
+      return true;
+    }
+
+    if ((from && !to) || (!from && to)) {
+      setError("기간은 from/to를 모두 입력해주세요. 기간을 다시 설정해 주세요.");
+      return false;
+    }
+    if (from > to) {
+      setError("기간이 올바르지 않습니다. from 날짜가 to 날짜보다 늦습니다. 기간을 다시 설정해 주세요.");
+      return false;
+    }
+    return true;
+  };
+
+
   const onSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(""); // 기존 에러 초기화
+
+    if (!validateDateRange()) return;
+
     setPage(0); 
     await load();
   };
 
   const onReset = async () => {
+    setError("");
     setEmail("");
     setName("");
     setRole("");
@@ -127,6 +155,7 @@ export default function UsersPage({ me }: { me: MeResponse }) {
   }
 
   return (
+    <>
     <div style={{ padding: 24, fontFamily: "sans-serif" }}>
       <h2 style={{ marginTop: 0 }}>Users</h2>
 
@@ -298,5 +327,6 @@ export default function UsersPage({ me }: { me: MeResponse }) {
         />
       )}      
     </div>
+    </>
   );
 }

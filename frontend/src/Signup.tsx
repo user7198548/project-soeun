@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { api } from "./api";
 import { useApiCall } from "./useApiCall";
+import Modal from "./Modal";
+
 
 type Errors = {
   email?: string;
@@ -12,6 +14,7 @@ export default function Signup({
   onSuccess,
   onGoLogin,
   onGoHome,
+  
   }: {
   onSuccess: () => void;
   onGoLogin: () => void;
@@ -24,7 +27,8 @@ export default function Signup({
   const [password, setPassword] = useState("");
 
   const [errors, setErrors] = useState<Errors>({});
-  const [emailChecking, setEmailChecking] = useState(false); // ✅ 중복 체크 중 표시용(선택)
+  const [emailChecking, setEmailChecking] = useState(false); // 중복 체크 중 표시용(선택)
+  const [successOpen, setSuccessOpen] = useState(false);
 
   // -----------------------
   // 1) Sync validations (onChange용)
@@ -171,11 +175,12 @@ export default function Signup({
     setName("");
     setPassword("");
     setErrors({});
-    onSuccess();
-    
+    setSuccessOpen(true);
+
   };
 
   return (
+    <>
     <div style={{ padding: 24, fontFamily: "sans-serif", maxWidth: 420 }}>
       
       <div style={{ marginBottom: 12 }}>
@@ -190,7 +195,7 @@ export default function Signup({
             padding: 0,
           }}
         >
-          ← 홈으로
+          Home
         </button>
       </div>
       
@@ -204,7 +209,7 @@ export default function Signup({
             onChange={(e) => onEmailChange(e.target.value)}
             onBlur={onEmailBlur}
             style={{ width: "100%", padding: 8 }}
-            placeholder="email@example.com"
+            placeholder="이메일"
           />
           {emailChecking && (
             <div style={{ color: "#666", fontSize: 12, marginTop: 4 }}>
@@ -224,7 +229,7 @@ export default function Signup({
             value={name}
             onChange={(e) => onNameChange(e.target.value)}
             style={{ width: "100%", padding: 8 }}
-            placeholder="홍길동"
+            placeholder="이름"
           />
           {errors.name && (
             <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
@@ -279,5 +284,41 @@ export default function Signup({
         이미 계정이 있으신가요? 로그인
       </button>
     </div>
+    <Modal
+      open={successOpen}
+      onClose={() => {
+        setSuccessOpen(false);
+        onSuccess(); // 👉 확인 누르면 로그인 화면으로
+      }}
+      title="회원가입 완료 🎉"
+    >
+      <div style={{ fontFamily: "sans-serif" }}>
+        <p style={{ marginBottom: 16 }}>
+          회원가입을 축하드립니다!<br />
+          로그인 후 서비스를 이용해 주세요 😊
+        </p>
+
+        <button
+          onClick={() => {
+            setSuccessOpen(false);
+            onSuccess();
+          }}
+          style={{
+            padding: "8px 14px",
+            background: "#3366ff",
+            color: "white",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          로그인 하러 가기
+        </button>
+      </div>
+    </Modal>
+</>
+    
   );
+  
 }

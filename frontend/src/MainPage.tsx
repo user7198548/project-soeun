@@ -5,6 +5,7 @@ import Login from "./Login";
 import Signup from "./Signup";
 import UserDetailModal from "./UserDetailPage";
 
+
 type MeResponse = {
   id: number;
   email: string;
@@ -25,20 +26,20 @@ export default function MainPage({
   const [authModal, setAuthModal] = useState<AuthModal>("closed");
 
   const [myDetailOpen, setMyDetailOpen] = useState(false);
-
+  
   const close = () => setAuthModal("closed");
 
     const openMyPage = () => {
     if (!me) return;
 
-    const role = (me.role || "").toUpperCase();
+    // const role = (me.role || "").toUpperCase();
 
-    // ✅ 정책: ADMIN이면 /users로 이동, USER면 내 디테일 모달
-    if (role === "ADMIN") {
-      navigate("/users", { replace: true });
-    } else {
-      setMyDetailOpen(true); // ✅ 모달 열기
-    }
+    // // 정책: ADMIN이면 /users로 이동, USER면 내 디테일 모달
+    // if (role === "ADMIN") {
+    //   navigate("/users", { replace: true });
+    // } else {
+      setMyDetailOpen(true); // 모달 열기
+    // }
   };
 
   const title = useMemo(() => {
@@ -48,19 +49,28 @@ export default function MainPage({
   }, [authModal]);
 
   return (
-    <div style={{ padding: 24, fontFamily: "sans-serif" }}>
+    <div style={{ padding: 24, fontFamily: "sans-serif", 
+        maxWidth: 1200, margin: "0 auto"}}>
       <h1>메인 화면</h1>
-
+      {me && String(me.role).toUpperCase().includes("ADMIN") && (
+        <button
+          type="button"
+          onClick={() => navigate("/users")}
+          style={{ padding: "10px 14px" }}
+        >
+          유저목록(/users)
+        </button>
+      )}
       {me ? (
         <>
-          <p>
+          {/* <p>
             현재 로그인: <b>{me.email}</b> ({me.role})
-          </p>
+          </p> */}
           <button
             onClick={openMyPage}
             style={{ padding: "10px 14px" }}
           >
-            내 페이지로 이동
+            마이페이지
           </button>
         </>
       ) : (
@@ -81,7 +91,7 @@ export default function MainPage({
         {authModal === "login" ? (
           <Login
             onSuccess={async () => {
-              const newMe = await refreshMe(); // 👈 /api/me 호출
+              const newMe = await refreshMe(); // /api/me 호출
               if (!newMe) return;
 
               const role = (newMe.role || "").toUpperCase();
@@ -89,7 +99,7 @@ export default function MainPage({
               if (role === "ADMIN") {
                 navigate("/users", { replace: true });
               } else {
-                // ✅ 로그인 성공하면 "내 상세 모달" 바로 띄우기
+                // 로그인 성공하면 "내 상세 모달" 바로 띄우기
                 setMyDetailOpen(true);
               }
 

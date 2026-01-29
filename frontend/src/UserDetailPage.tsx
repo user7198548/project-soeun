@@ -129,7 +129,6 @@ export default function UserDetailModal({
       }}
       title="User Detail"
     >
-      {/* 에러 */}
       {error && (
         <pre
           style={{
@@ -144,7 +143,6 @@ export default function UserDetailModal({
         </pre>
       )}
 
-      {/* 본문 */}
       {!data ? (
         <p style={{ margin: 0 }}>{busy ? "로딩중..." : "데이터가 없습니다."}</p>
       ) : (
@@ -159,7 +157,6 @@ export default function UserDetailModal({
           boxSizing: "border-box",
         }}>
            
-          {/* NAME */}
           <div style={{ marginBottom: 12 }}>
             <div style={{ fontWeight: 700, marginBottom: 4 }}>Name</div>
 
@@ -194,7 +191,6 @@ export default function UserDetailModal({
             )}
           </div>
 
-          {/* STATIC */}
           <div style={{ marginBottom: 6 }}>
             <b>Email</b>: {data.email}
           </div>
@@ -216,7 +212,6 @@ export default function UserDetailModal({
               </>
             )}
 
-          {/* ADMIN ONLY ACTIVE TOGGLE */}
           {me.role === "ADMIN" && (
             <div style={{ display: "flex", gap: 12 }}>
               <div style={{ display: "flex", gap: 8 }}>
@@ -234,7 +229,6 @@ export default function UserDetailModal({
           )}
 
 
-          {/* 하단 닫기 버튼 */}
           <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
             <button onClick={onClose} disabled={busy}>
               닫기

@@ -87,7 +87,7 @@ export default function Login({
           padding: 0,
         }}
       >
-        ← 홈으로
+        Home
       </button>
     </div>
       
