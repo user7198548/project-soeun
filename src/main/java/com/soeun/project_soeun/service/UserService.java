@@ -110,4 +110,8 @@ public class UserService {
                 user.getUpdatedAt()
         );
     }
+
+    public boolean isEmailDuplicated(String email) {
+        return userRepository.existsByEmail(email);
+    }
 }

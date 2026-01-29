@@ -1,6 +1,7 @@
 package com.soeun.project_soeun.controller;
 
 import com.soeun.project_soeun.dto.LoginRequest;
+import com.soeun.project_soeun.dto.MeResponse;
 import com.soeun.project_soeun.dto.SignupRequest;
 import com.soeun.project_soeun.service.AuthService;
 import jakarta.servlet.http.HttpSession;
@@ -25,14 +26,25 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest req, HttpSession session) {
-        authService.login(req, session);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<MeResponse> login(@Valid @RequestBody LoginRequest req, HttpSession session) {
+        MeResponse me = authService.login(req, session);
+        return ResponseEntity.ok(me);
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpSession session) {
         authService.logout(session);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<CheckEmailResponse> checkEmail(@RequestParam String email) {
+        boolean duplicated = authService.isEmailDuplicated(email);
+        return ResponseEntity.ok(new CheckEmailResponse(duplicated));
+    }
+
+    public record CheckEmailResponse(boolean duplicated) {}
+
 }
+

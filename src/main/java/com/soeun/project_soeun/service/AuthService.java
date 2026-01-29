@@ -39,7 +39,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public void login(LoginRequest req, HttpSession session) {
+    public MeResponse login(LoginRequest req, HttpSession session) {
         // email이 일치하지 않을 때
         User user = userRepository.findByEmail(req.email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
@@ -59,6 +59,7 @@ public class AuthService {
         session.setAttribute(SESSION_USER_ID, user.getId());
         //admin 체크
         session.setAttribute("role", user.getRole());
+        return new MeResponse(user.getId(), user.getEmail(), user.getName(), user.getRole());
     }
 
     public void logout(HttpSession session) {
@@ -81,6 +82,9 @@ public class AuthService {
         return new MeResponse(user.getId(), user.getEmail(), user.getName(), user.getRole());
     }
 
+    public boolean isEmailDuplicated(String email) {
+        return userRepository.existsByEmail(email);
+    }
 
 
 }

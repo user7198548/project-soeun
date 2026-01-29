@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
-import Login from "./Login";
 import UsersPage from "./UsersPage";
 import UserDetailPage from "./UserDetailPage";
 import { api } from "./api";
-import Signup from "./Signup";
+import MainPage from "./MainPage";
 
 type MeResponse = {
   id: number;
   email: string;
   name: string;
-  role: string;
+  role: string; // "ADMIN" | "USER" 같은 값이라고 가정
 };
 
 export default function App() {
@@ -22,8 +21,10 @@ export default function App() {
     try {
       const res = await api<MeResponse>("/api/me");
       setMe(res);
+      return res;
     } catch {
       setMe(null);
+      return null;
     } finally {
       setChecking(false);
     }
@@ -37,7 +38,7 @@ export default function App() {
   const logout = async () => {
     await api<void>("/api/auth/logout", { method: "POST" });
     setMe(null);
-    navigate("/login");
+    navigate("/", { replace: true });
   };
 
   if (checking) return <div style={{ padding: 24 }}>로딩중...</div>;
@@ -69,25 +70,25 @@ export default function App() {
       )}
 
       <Routes>
-        <Route
-          path="/login"
-          element={<Login onSuccess={refreshMe} />}
-        />
+        {/* ✅ 메인(홈) */}
+        <Route path="/" element={<MainPage me={me} refreshMe={refreshMe} />} />
 
+        {/* ✅ 보호 라우트 */}
         <Route
           path="/users"
-          element={me ? <UsersPage me={me} /> : <Navigate to="/login" replace />}
+          element={me ? <UsersPage me={me} /> : <Navigate to="/" replace />}
         />
-
         <Route
           path="/users/:id"
-          element={me ? <UserDetailPage me={me} /> : <Navigate to="/login" replace />}
+          element={me ? <UserDetailPage me={me} /> : <Navigate to="/" replace />}
         />
 
-        <Route path="*" element={<Navigate to={me ? "/users" : "/login"} replace />} />
+        {/* (선택) 직접 /login, /signup 들어오면 홈으로 보내기 */}
+        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="/signup" element={<Navigate to="/" replace />} />
 
-        <Route path="/signup" element={<Signup />} />
-
+        {/* 나머지는 홈으로 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );
