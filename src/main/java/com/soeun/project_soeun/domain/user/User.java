@@ -50,12 +50,12 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public static User create(String email, String passwordHash, String name) {
+    public static User create(String email, String passwordHash, String name, String role) {
         User user = new User();         // 같은 클래스 내부라 protected 생성자 호출 가능
         user.email = email;
         user.passwordHash = passwordHash;
         user.name = name;
-        user.role = "USER";
+        user.role = role;
         user.isActive = true;
         return user;
     }

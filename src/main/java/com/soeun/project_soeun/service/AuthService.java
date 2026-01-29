@@ -34,7 +34,7 @@ public class AuthService {
 
         String hashed = passwordEncoder.encode((req.password));
 
-        User user = User.create(req.email, hashed, req.name);
+        User user = User.create(req.email, hashed, req.name, role);
 
         userRepository.save(user);
     }
