@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "./api";
 import { useApiCall } from "./useApiCall";
 import UserDetailModal from "./UserDetailPage";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 type MeResponse = { id: number; email: string; name: string; role: string };
 
@@ -50,7 +50,7 @@ export default function UsersPage({ me }: { me: MeResponse }) {
   const size = 10;
 
   const [data, setData] = useState<Page<UserListItemResponse> | null>(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const queryString = useMemo(
     () =>
@@ -262,7 +262,13 @@ export default function UsersPage({ me }: { me: MeResponse }) {
               </button>
             </div>
           </div>
-
+          <div
+            style={{
+              maxHeight: "calc(100vh - 260px)",
+              overflowY: "auto",
+              paddingRight: 6,                 // 스크롤바 겹침 방지
+            }}
+          ></div>
           <div style={{ display: "grid", gap: 8 }}>
             {data.content.map((u) => (
               <div
@@ -275,6 +281,8 @@ export default function UsersPage({ me }: { me: MeResponse }) {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  cursor: "pointer",
+                  background: "white",
                 }}
               >
                 <div style={{ minWidth: 0 }}>
