@@ -1,18 +1,27 @@
 package com.soeun.project_soeun.service;
 
+import com.soeun.project_soeun.domain.user.EmailVerification;
 import com.soeun.project_soeun.domain.user.User;
 import com.soeun.project_soeun.dto.LoginRequest;
 import com.soeun.project_soeun.dto.MeResponse;
 import com.soeun.project_soeun.dto.SignupRequest;
+import com.soeun.project_soeun.dto.VerifyResponse;
+import com.soeun.project_soeun.repository.EmailVerificationRepository;
 import com.soeun.project_soeun.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -22,6 +31,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationRepository emailVerificationRepository;
 
     public void signup(SignupRequest req) {
 
@@ -35,8 +45,19 @@ public class AuthService {
         String hashed = passwordEncoder.encode((req.password));
 
         User user = User.create(req.email, hashed, req.name, role);
-
+        user.setActive(false);
         userRepository.save(user);
+
+        String token = UUID.randomUUID().toString();
+
+        EmailVerification ev = EmailVerification.create(
+                user,
+                token,
+                Instant.now().plus(Duration.ofHours(24))
+        );
+        emailVerificationRepository.save(ev);
+
+        log.info("VERIFY LINK: http://localhost:3000/verify?token={}", token);
     }
 
     public MeResponse login(LoginRequest req, HttpSession session) {
@@ -55,6 +76,11 @@ public class AuthService {
         if(!user.isActive()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "비활성화 된 계정입니다.");
         }
+
+//        if (!user.isActive()) {
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "이메일 인증이 필요합니다.");
+//        }
+
 
         session.setAttribute(SESSION_USER_ID, user.getId());
         //admin 체크
@@ -86,5 +112,24 @@ public class AuthService {
         return userRepository.existsByEmail(email);
     }
 
+    @Transactional
+    public VerifyResponse verifyEmail(String token) {
+        EmailVerification ev = emailVerificationRepository.findByToken(token)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "유효하지 않은 토큰입니다."));
+
+        if (ev.isVerified()) {
+            return new VerifyResponse("이미 인증 완료되었습니다.");
+        }
+        if (ev.isExpired()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "인증 링크가 만료되었습니다.");
+        }
+
+        ev.setVerifiedAt(Instant.now());
+
+        User user = ev.getUser();
+        user.setActive(true);
+
+        return new VerifyResponse("이메일 인증이 완료되었습니다.");
+    }
 
 }

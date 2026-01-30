@@ -114,4 +114,6 @@ public class UserService {
     public boolean isEmailDuplicated(String email) {
         return userRepository.existsByEmail(email);
     }
+
+    
 }
