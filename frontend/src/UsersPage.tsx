@@ -157,7 +157,7 @@ export default function UsersPage({ me }: { me: MeResponse }) {
   return (
     <>
     <div style={{ padding: 24, fontFamily: "sans-serif" }}>
-      <h2 style={{ marginTop: 0 }}>Users</h2>
+      <h2 style={{ marginTop: 0 }}>회원 목록</h2>
 
       {/* 검색 필터 */}
       <form
@@ -172,7 +172,7 @@ export default function UsersPage({ me }: { me: MeResponse }) {
         }}
       >
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 180px", gap: 10 }}>
-          <div>
+          <div style={{ }}>
             <div style={{ fontSize: 12, color: "#555" }}>email</div>
             <input
               value={email}
@@ -218,10 +218,10 @@ export default function UsersPage({ me }: { me: MeResponse }) {
               type="date"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              style={{ width: "100%", padding: 8 }}
+              style={{ width: "100%", padding: 8}}
             />
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "end" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "end"}}>
             <button type="submit" disabled={busy}>
               {busy ? "검색중..." : "검색"}
             </button>
@@ -311,7 +311,9 @@ export default function UsersPage({ me }: { me: MeResponse }) {
                   ) : (
                     <button
                       disabled={busy || busyId === u.id}
-                      onClick={() => setActive(u.id, true)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActive(u.id, true)}}
                     >
                       {busyId === u.id ? "처리중..." : "활성화"}
                     </button>

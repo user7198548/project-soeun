@@ -67,9 +67,9 @@ export default function App() {
             <div style={styles.right}>
               {me ? (
                 <>
-                  <span style={styles.meText}>
+                  {/* <span style={styles.meText}>
                     {me.email} <span style={styles.muted}>({me.role})</span>
-                  </span>
+                  </span> */}
                   <button type="button" onClick={logout} style={styles.logoutBtn}>
                     로그아웃
                   </button>
