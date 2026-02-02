@@ -41,6 +41,9 @@ dependencies {
 	// Log4j2 사용
 	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
 
+	//email 인증
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 

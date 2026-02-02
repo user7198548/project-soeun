@@ -33,6 +33,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationRepository emailVerificationRepository;
+    private final MailService mailService;
 
     public void signup(SignupRequest req) {
 
@@ -58,7 +59,11 @@ public class AuthService {
         );
         emailVerificationRepository.save(ev);
 
-        log.info("VERIFY LINK: http://localhost:3000/verify?token={}", token);
+        //log.info("VERIFY LINK: http://localhost:3000/verify?token={}", token);
+
+        String verifyLink = "http://localhost:3000/verify?token=" + token;
+        mailService.sendVerificationEmail(user.getEmail(), verifyLink);
+
     }
 
     public MeResponse login(LoginRequest req, HttpSession session) {

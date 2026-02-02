@@ -295,7 +295,7 @@ export default function Signup({
       <div style={{ fontFamily: "sans-serif" }}>
         <p style={{ marginBottom: 16 }}>
           회원가입을 축하드립니다!<br />
-          로그인 후 서비스를 이용해 주세요 😊
+          이메일 인증 후 로그인해주세요. 😊
         </p>
 
         <button

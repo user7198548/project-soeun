@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import UsersPage from "./UsersPage";
 import { api } from "./api";
 import MainPage from "./MainPage";
+import VerifyPage from "./VerifyPage.tsx";
 
 type MeResponse = {
   id: number;
@@ -42,7 +43,7 @@ export default function App() {
 
   if (checking) return <div style={styles.page}>로딩중...</div>;
 
-  const isAdmin = !!me && String(me.role).toUpperCase().includes("ADMIN");
+  //const isAdmin = !!me && String(me.role).toUpperCase().includes("ADMIN");
 
   return (
     <div style={styles.app}>
@@ -90,6 +91,7 @@ export default function App() {
             path="/users"
             element={me ? <UsersPage me={me} /> : <Navigate to="/" replace />}
           />
+          <Route path="/verify" element={<VerifyPage />} />
 
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/signup" element={<Navigate to="/" replace />} />
@@ -120,8 +122,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
   },
   headerInner: {
-    maxWidth: 1200,              // ⭐ 원하는 폭
-    margin: "0 auto",            // ⭐ 가운데 정렬 핵심
+    maxWidth: 1200,              // 원하는 폭
+    margin: "0 auto",            // 가운데 정렬 핵심
     padding: "12px 16px",
     display: "grid",
     gridTemplateColumns: "auto 1fr auto",
