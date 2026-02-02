@@ -2,6 +2,7 @@ package com.soeun.project_soeun.service;
 
 import com.soeun.project_soeun.domain.user.EmailVerification;
 import com.soeun.project_soeun.domain.user.User;
+import com.soeun.project_soeun.domain.user.UserStatus;
 import com.soeun.project_soeun.dto.LoginRequest;
 import com.soeun.project_soeun.dto.MeResponse;
 import com.soeun.project_soeun.dto.SignupRequest;
@@ -45,7 +46,7 @@ public class AuthService {
         String hashed = passwordEncoder.encode((req.password));
 
         User user = User.create(req.email, hashed, req.name, role);
-        user.setActive(false);
+        user.setStatus(UserStatus.PENDING);
         userRepository.save(user);
 
         String token = UUID.randomUUID().toString();
@@ -77,9 +78,9 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "비활성화 된 계정입니다.");
         }
 
-//        if (!user.isActive()) {
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "이메일 인증이 필요합니다.");
-//        }
+        if (user.getStatus() == UserStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "이메일 인증이 필요합니다.");
+        }
 
 
         session.setAttribute(SESSION_USER_ID, user.getId());
@@ -127,7 +128,7 @@ public class AuthService {
         ev.setVerifiedAt(Instant.now());
 
         User user = ev.getUser();
-        user.setActive(true);
+        user.setStatus(UserStatus.ACTIVE);
 
         return new VerifyResponse("이메일 인증이 완료되었습니다.");
     }

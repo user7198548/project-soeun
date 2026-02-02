@@ -3,6 +3,7 @@ package com.soeun.project_soeun.controller;
 import com.soeun.project_soeun.dto.LoginRequest;
 import com.soeun.project_soeun.dto.MeResponse;
 import com.soeun.project_soeun.dto.SignupRequest;
+import com.soeun.project_soeun.dto.VerifyResponse;
 import com.soeun.project_soeun.service.AuthService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -45,6 +46,13 @@ public class AuthController {
     }
 
     public record CheckEmailResponse(boolean duplicated) {}
+
+    @GetMapping("/api/auth/verify")
+    public VerifyResponse verify(@RequestParam String token) {
+        return authService.verifyEmail(token);
+    }
+
+
 
 }
 
