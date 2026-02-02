@@ -22,6 +22,7 @@ export default function Login({
   const [password, setPassword] = useState("");
 
   const [errors, setErrors] = useState<Errors>({});
+  const needEmailVerify = error?.includes("이메일 인증");
 
   const validateEmail = (v: string) => {
     if (!v) return "이메일은 필수 입력 항목입니다.";
@@ -46,13 +47,16 @@ export default function Login({
   };
 
   const isFormValid =
-    email.trim() &&
-    password &&
-    !errors.email &&
-    !errors.password;
+    email.trim() && password && !errors.email && !errors.password;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const emailErr = validateEmail(email.trim());
+    const pwErr = validatePassword(password);
+
+    setErrors({ email: emailErr, password: pwErr });
+    if (emailErr || pwErr) return;
 
     const nextErrors: Errors = {
       email: validateEmail(email.trim()),
@@ -73,24 +77,24 @@ export default function Login({
     if (!ok) return;
   };
 
-  return (  
+  return (
     <div style={{ padding: 24, fontFamily: "sans-serif", maxWidth: 420 }}>
-          <div style={{ marginBottom: 12 }}>
-      <button
-        type="button"
-        onClick={() => onGoHome?.()}
-        style={{
-          background: "transparent",
-          border: "none",
-          color: "#3366ff",
-          cursor: "pointer",
-          padding: 0,
-        }}
-      >
-        Home
-      </button>
-    </div>
-      
+      <div style={{ marginBottom: 12 }}>
+        <button
+          type="button"
+          onClick={() => onGoHome?.()}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#3366ff",
+            cursor: "pointer",
+            padding: 0,
+          }}
+        >
+          Home
+        </button>
+      </div>
+
       <h2>로그인</h2>
       <form onSubmit={submit}>
         <div style={{ marginBottom: 12 }}>
@@ -99,31 +103,29 @@ export default function Login({
             value={email}
             placeholder="이메일"
             onChange={(e) => onEmailChange(e.target.value)}
-            onBlur={(e) => setErrors((prev) => ({ ...prev, email: validateEmail(e.target.value.trim()) }))}
             style={{ width: "100%", padding: 8 }}
           />
-          {errors.email && (
+          {/* {errors.email && (
             <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
               {errors.email}
             </div>
-          )}
+          )} */}
         </div>
 
         <div style={{ marginBottom: 12 }}>
           <div>비밀번호</div>
           <input
-            type="password" 
+            type="password"
             placeholder="********"
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
-            onBlur={(e) => setErrors((prev) => ({ ...prev, password: validatePassword(e.target.value) }))}
             style={{ width: "100%", padding: 8 }}
           />
-          {errors.password && (
+          {/* {errors.password && (
             <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
               {errors.password}
             </div>
-          )}
+          )} */}
         </div>
 
         <button
@@ -139,7 +141,35 @@ export default function Login({
           {busy ? "로그인중..." : "로그인"}
         </button>
 
-        {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
+        {error && (
+          <p style={{ marginTop: 12 }}>
+            <p style={{ color: "red", margin: 0 }}>{error}</p>
+
+            {needEmailVerify && (
+              <div style={{ marginTop: 8 }}>
+                <p style={{ color: "#666", margin: "6px 0 10px" }}>
+                  가입한 이메일로 발송된 인증 링크를 클릭한 후 다시
+                  로그인해주세요. 메일을 못 받으셨다면 아래 버튼으로 재전송할 수
+                  있어요.
+                </p>
+
+                <button
+                  type="button"
+                  //onClick={resendVerification}
+                  disabled={busy || !email.trim()}
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: busy || !email.trim() ? "#ccc" : "#111827",
+                    color: busy || !email.trim() ? "#666" : "#fff",
+                    cursor: busy || !email.trim() ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {busy ? "전송 중..." : "인증 메일 재전송"}
+                </button>
+              </div>
+            )}
+          </p>
+        )}
 
         <hr style={{ margin: "16px 0" }} />
         <button

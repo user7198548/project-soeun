@@ -3,7 +3,6 @@ import { api } from "./api";
 import { useApiCall } from "./useApiCall";
 import Modal from "./Modal";
 
-
 type Errors = {
   email?: string;
   name?: string;
@@ -14,8 +13,7 @@ export default function Signup({
   onSuccess,
   onGoLogin,
   onGoHome,
-  
-  }: {
+}: {
   onSuccess: () => void;
   onGoLogin: () => void;
   onGoHome?: () => void;
@@ -62,7 +60,7 @@ export default function Signup({
     // 예시: { duplicated: true/false }
     const res = await api<{ duplicated: boolean }>(
       `/api/auth/check-email?email=${encodeURIComponent(v)}`,
-      { method: "GET" }
+      { method: "GET" },
     );
     return res.duplicated;
   };
@@ -111,7 +109,7 @@ export default function Signup({
         email: "이메일 중복 확인에 실패했습니다. 잠시 후 다시 시도해주세요.",
       }));
     } finally {
-        setEmailChecking(false);
+      setEmailChecking(false);
     }
   };
 
@@ -165,7 +163,11 @@ export default function Signup({
     const ok = await run(async () => {
       await api<void>("/api/auth/signup", {
         method: "POST",
-        body: JSON.stringify({ email: email.trim(), name: name.trim(), password }),
+        body: JSON.stringify({
+          email: email.trim(),
+          name: name.trim(),
+          password,
+        }),
       });
       return true;
     });
@@ -176,149 +178,146 @@ export default function Signup({
     setPassword("");
     setErrors({});
     setSuccessOpen(true);
-
   };
 
   return (
     <>
-    <div style={{ padding: 24, fontFamily: "sans-serif", maxWidth: 420 }}>
-      
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ padding: 24, fontFamily: "sans-serif", maxWidth: 420 }}>
+        <div style={{ marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={() => onGoHome?.()}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#3366ff",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            Home
+          </button>
+        </div>
+
+        <h2>회원가입</h2>
+
+        <form onSubmit={submit}>
+          <div style={{ marginBottom: 12 }}>
+            <div>이메일</div>
+            <input
+              value={email}
+              onChange={(e) => onEmailChange(e.target.value)}
+              onBlur={onEmailBlur}
+              style={{ width: "100%", padding: 8 }}
+              placeholder="이메일"
+            />
+            {emailChecking && (
+              <div style={{ color: "#666", fontSize: 12, marginTop: 4 }}>
+                이메일 중복 확인 중...
+              </div>
+            )}
+            {errors.email && (
+              <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+                {errors.email}
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginBottom: 12 }}>
+            <div>이름</div>
+            <input
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              style={{ width: "100%", padding: 8 }}
+              placeholder="이름"
+            />
+            {errors.name && (
+              <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+                {errors.name}
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginBottom: 12 }}>
+            <div>비밀번호</div>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => onPasswordChange(e.target.value)}
+              style={{ width: "100%", padding: 8 }}
+              placeholder="영문+숫자 포함 8자 이상"
+            />
+            {errors.password && (
+              <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+                {errors.password}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={!isFormValid || busy}
+            style={{
+              padding: "8px 12px",
+              backgroundColor: !isFormValid || busy ? "#ccc" : "#3366ff",
+              color: !isFormValid || busy ? "#666" : "#fff",
+              cursor: !isFormValid || busy ? "not-allowed" : "pointer",
+            }}
+          >
+            {busy ? "가입중..." : "회원가입"}
+          </button>
+
+          {error && (
+            <p style={{ color: "red", whiteSpace: "pre-wrap", marginTop: 12 }}>
+              {error}
+            </p>
+          )}
+        </form>
+
+        <hr style={{ margin: "16px 0" }} />
+
         <button
           type="button"
-          onClick={() => onGoHome?.()}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "#3366ff",
-            cursor: "pointer",
-            padding: 0,
-          }}
+          onClick={onGoLogin}
+          style={{ background: "transparent", color: "#3366ff" }}
         >
-          Home
+          이미 계정이 있으신가요? 로그인
         </button>
       </div>
-      
-      <h2>회원가입</h2>
-
-      <form onSubmit={submit}>
-        <div style={{ marginBottom: 12 }}>
-          <div>이메일</div>
-          <input
-            value={email}
-            onChange={(e) => onEmailChange(e.target.value)}
-            onBlur={onEmailBlur}
-            style={{ width: "100%", padding: 8 }}
-            placeholder="이메일"
-          />
-          {emailChecking && (
-            <div style={{ color: "#666", fontSize: 12, marginTop: 4 }}>
-              이메일 중복 확인 중...
-            </div>
-          )}
-          {errors.email && (
-            <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
-              {errors.email}
-            </div>
-          )}
-        </div>
-
-        <div style={{ marginBottom: 12 }}>
-          <div>이름</div>
-          <input
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
-            style={{ width: "100%", padding: 8 }}
-            placeholder="이름"
-          />
-          {errors.name && (
-            <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
-              {errors.name}
-            </div>
-          )}
-        </div>
-
-        <div style={{ marginBottom: 12 }}>
-          <div>비밀번호</div>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => onPasswordChange(e.target.value)}
-            style={{ width: "100%", padding: 8 }}
-            placeholder="영문+숫자 포함 8자 이상"
-          />
-          {errors.password && (
-            <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
-              {errors.password}
-            </div>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          disabled={!isFormValid || busy}
-          style={{
-            padding: "8px 12px",
-            backgroundColor: !isFormValid || busy ? "#ccc" : "#3366ff",
-            color: !isFormValid || busy ? "#666" : "#fff",
-            cursor: !isFormValid || busy ? "not-allowed" : "pointer",
-          }}
-        >
-          {busy ? "가입중..." : "회원가입"}
-        </button>
-
-        {error && (
-          <p style={{ color: "red", whiteSpace: "pre-wrap", marginTop: 12 }}>
-            {error}
-          </p>
-        )}
-      </form>
-
-      <hr style={{ margin: "16px 0" }} />
-
-      <button
-        type="button"
-        onClick={onGoLogin}
-        style={{ background: "transparent", color: "#3366ff" }}
+      <Modal
+        open={successOpen}
+        onClose={() => {
+          setSuccessOpen(false);
+          onSuccess(); // 👉 확인 누르면 로그인 화면으로
+        }}
+        title="회원가입 완료 🎉"
       >
-        이미 계정이 있으신가요? 로그인
-      </button>
-    </div>
-    <Modal
-      open={successOpen}
-      onClose={() => {
-        setSuccessOpen(false);
-        onSuccess(); // 👉 확인 누르면 로그인 화면으로
-      }}
-      title="회원가입 완료 🎉"
-    >
-      <div style={{ fontFamily: "sans-serif" }}>
-        <p style={{ marginBottom: 16 }}>
-          회원가입을 축하드립니다!<br />
-          이메일 인증 후 로그인해주세요. 😊
-        </p>
+        <div style={{ fontFamily: "sans-serif" }}>
+          <p style={{ marginBottom: 16 }}>
+            회원가입을 축하드립니다!
+            <br />
+            이메일 인증 후 로그인해주세요. 😊
+          </p>
 
-        <button
-          onClick={() => {
-            setSuccessOpen(false);
-            onSuccess();
-          }}
-          style={{
-            padding: "8px 14px",
-            background: "#3366ff",
-            color: "white",
-            border: "none",
-            borderRadius: 8,
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          로그인 하러 가기
-        </button>
-      </div>
-    </Modal>
-</>
-    
+          <button
+            onClick={() => {
+              setSuccessOpen(false);
+              onSuccess();
+            }}
+            style={{
+              padding: "8px 14px",
+              background: "#3366ff",
+              color: "white",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            로그인 하러 가기
+          </button>
+        </div>
+      </Modal>
+    </>
   );
-  
 }

@@ -3,15 +3,13 @@ package com.soeun.project_soeun.service;
 import com.soeun.project_soeun.domain.user.EmailVerification;
 import com.soeun.project_soeun.domain.user.User;
 import com.soeun.project_soeun.domain.user.UserStatus;
-import com.soeun.project_soeun.dto.LoginRequest;
-import com.soeun.project_soeun.dto.MeResponse;
-import com.soeun.project_soeun.dto.SignupRequest;
-import com.soeun.project_soeun.dto.VerifyResponse;
+import com.soeun.project_soeun.dto.*;
 import com.soeun.project_soeun.repository.EmailVerificationRepository;
 import com.soeun.project_soeun.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +27,9 @@ import java.util.UUID;
 public class AuthService {
 
     public static final String SESSION_USER_ID = "userId";
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -59,10 +60,13 @@ public class AuthService {
         );
         emailVerificationRepository.save(ev);
 
-        //log.info("VERIFY LINK: http://localhost:3000/verify?token={}", token);
+        String verifyLink = baseUrl + "/verify?token=" + token;
 
-        String verifyLink = "http://localhost:3000/verify?token=" + token;
+        log.info("SIGNUP: created user={}, email={}", user.getId(), user.getEmail());
+        log.info("SIGNUP: about to send verification mail. link={}", verifyLink);
+
         mailService.sendVerificationEmail(user.getEmail(), verifyLink);
+        log.info("SIGNUP: verification mail sent.");
 
     }
 
@@ -136,6 +140,31 @@ public class AuthService {
         user.setStatus(UserStatus.ACTIVE);
 
         return new VerifyResponse("이메일 인증이 완료되었습니다.");
+    }
+
+    public ResendResponse resendVerification(ResendRequest req) {
+//        User user = userRepository.findByEmail(req.email())
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.OK, "전송 처리 완료"));
+        User user = userRepository.findByEmail(req.email()).orElse(null);
+        if (user == null) return new ResendResponse("전송 처리 완료"); // 존재 숨김
+
+        if (    user.getStatus() == UserStatus.ACTIVE) {
+            return new ResendResponse("이미 인증이 완료된 계정입니다.");
+        }
+
+        // 여기서 "기존 pending 토큰 만료 처리" 호출
+        emailVerificationRepository.expireAllPendingByUserId(user.getId(), Instant.now());
+
+        String token = UUID.randomUUID().toString();
+        Instant expiresAt = Instant.now().plus(Duration.ofHours(24));
+
+        EmailVerification ev = EmailVerification.create(user, token, expiresAt);
+        emailVerificationRepository.save(ev);
+
+        String verifyLink = baseUrl + "/verify?token=" + token;
+        mailService.sendVerificationEmail(user.getEmail(), verifyLink);
+
+        return new ResendResponse("인증 메일을 전송했습니다. 메일함을 확인해주세요.");
     }
 
 }

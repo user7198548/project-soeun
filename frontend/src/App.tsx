@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import UsersPage from "./UsersPage";
 import { api } from "./api";
 import MainPage from "./MainPage";
-import VerifyPage from "./VerifyPage.tsx";
+import VerifyPage from "./VerifyPage";
 
 type MeResponse = {
   id: number;
@@ -50,42 +50,45 @@ export default function App() {
       {/* 전역 헤더: 중첩 없이 한 번만 */}
       <header style={styles.header}>
         {/* <div style={styles.headerInner}> */}
-            {/* Left */}
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              style={styles.homeBtn}
-            >
-              Home
-            </button>
+        {/* Left */}
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          style={styles.homeBtn}
+        >
+          Home
+        </button>
 
-            {/* Center */}
-            {/* <div style={styles.brand}>
+        {/* Center */}
+        {/* <div style={styles.brand}>
               {isAdmin && <span style={styles.badge}>ADMIN</span>}
             </div> */}
 
-            {/* Right */}
-            <div style={styles.right}>
-              {me ? (
-                <>
-                  {/* <span style={styles.meText}>
+        {/* Right */}
+        <div style={styles.right}>
+          {me ? (
+            <>
+              {/* <span style={styles.meText}>
                     {me.email} <span style={styles.muted}>({me.role})</span>
                   </span> */}
-                  <button type="button" onClick={logout} style={styles.logoutBtn}>
-                    로그아웃
-                  </button>
-                </>
-              ) : (
-                <span style={styles.muted}>로그인되지 않음</span>
-              )}
-            </div>
+              <button type="button" onClick={logout} style={styles.logoutBtn}>
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <span style={styles.muted}>로그인되지 않음</span>
+          )}
+        </div>
         {/* </div> */}
       </header>
 
       {/* 페이지 영역 */}
       <main style={styles.page}>
         <Routes>
-          <Route path="/" element={<MainPage me={me} refreshMe={refreshMe} />} />
+          <Route
+            path="/"
+            element={<MainPage me={me} refreshMe={refreshMe} />}
+          />
 
           <Route
             path="/users"
@@ -98,7 +101,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      </div>
+    </div>
   );
 }
 
@@ -106,7 +109,7 @@ export default function App() {
 const styles: Record<string, React.CSSProperties> = {
   app: {
     minHeight: "100vh",
-    background: "#fafafa", 
+    background: "#fafafa",
   },
   header: {
     position: "sticky",
@@ -122,8 +125,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
   },
   headerInner: {
-    maxWidth: 1200,              // 원하는 폭
-    margin: "0 auto",            // 가운데 정렬 핵심
+    maxWidth: 1200, // 원하는 폭
+    margin: "0 auto", // 가운데 정렬 핵심
     padding: "12px 16px",
     display: "grid",
     gridTemplateColumns: "auto 1fr auto",
@@ -184,12 +187,12 @@ const styles: Record<string, React.CSSProperties> = {
   page: {
     padding: "16px 24px",
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-    maxWidth: 1400,      // 1200~1600 취향
+    maxWidth: 1400, // 1200~1600 취향
     margin: "0 auto",
-    width: "100%"
+    width: "100%",
   },
   container: {
-  maxWidth: 1200,          // ← 여기서 폭 조절 (1200~1440 추천)
-  margin: "0 auto",        // ← 가운데 정렬
+    maxWidth: 1200, // ← 여기서 폭 조절 (1200~1440 추천)
+    margin: "0 auto", // ← 가운데 정렬
   },
 };
