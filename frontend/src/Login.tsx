@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "./api";
 import { useApiCall } from "./useApiCall";
+import PageContentWrapper from "./components/layout/PageContentWrapper";
 
 type Errors = {
   email?: string;
@@ -78,7 +79,7 @@ export default function Login({
   };
 
   return (
-    <div style={{ padding: 24, fontFamily: "sans-serif", maxWidth: 420 }}>
+    <PageContentWrapper maxWidth="420px">
       <div style={{ marginBottom: 12 }}>
         <button
           type="button"
@@ -180,6 +181,6 @@ export default function Login({
           아직 계정이 없으신가요? 회원가입
         </button>
       </form>
-    </div>
+    </PageContentWrapper>
   );
 }

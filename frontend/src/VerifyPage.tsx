@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "./api";
 import { useApiCall } from "./useApiCall";
+import PageContentWrapper from "./components/layout/PageContentWrapper";
 
 type VerifyResponse = { message: string };
 
@@ -24,16 +25,19 @@ export default function VerifyPage() {
     }
 
     run(async () => {
-      const res = await api<VerifyResponse>(`/api/auth/verify?token=${encodeURIComponent(token)}`, {
-        method: "GET",
-      });
+      const res = await api<VerifyResponse>(
+        `/api/auth/verify?token=${encodeURIComponent(token)}`,
+        {
+          method: "GET",
+        },
+      );
       setMsg(res?.message ?? "이메일 인증이 완료되었습니다.");
       return res;
     });
   }, [token]);
 
   return (
-    <div style={{ maxWidth: 520, margin: "40px auto", padding: 16 }}>
+    <PageContentWrapper maxWidth="520px" marginTop="40px" padding="16px">
       <h2 style={{ marginBottom: 12 }}>이메일 인증</h2>
 
       {busy && <p>인증 처리 중입니다...</p>}
@@ -59,6 +63,6 @@ export default function VerifyPage() {
           로그인 하러 가기
         </button>
       </div>
-    </div>
+    </PageContentWrapper>
   );
 }
