@@ -4,7 +4,7 @@ import Modal from "./Modal";
 import Login from "./Login";
 import Signup from "./Signup";
 import UserDetailModal from "./UserDetailPage";
-
+import PageContentWrapper from "./components/layout/PageContentWrapper";
 
 type MeResponse = {
   id: number;
@@ -26,10 +26,10 @@ export default function MainPage({
   const [authModal, setAuthModal] = useState<AuthModal>("closed");
 
   const [myDetailOpen, setMyDetailOpen] = useState(false);
-  
+
   const close = () => setAuthModal("closed");
 
-    const openMyPage = () => {
+  const openMyPage = () => {
     if (!me) return;
 
     // const role = (me.role || "").toUpperCase();
@@ -38,7 +38,7 @@ export default function MainPage({
     // if (role === "ADMIN") {
     //   navigate("/users", { replace: true });
     // } else {
-      setMyDetailOpen(true); // 모달 열기
+    setMyDetailOpen(true); // 모달 열기
     // }
   };
 
@@ -49,8 +49,7 @@ export default function MainPage({
   }, [authModal]);
 
   return (
-    <div style={{ padding: 24, fontFamily: "sans-serif", 
-        maxWidth: 1200, margin: "0 auto"}}>
+    <PageContentWrapper>
       <h1>메인 화면</h1>
       {me && String(me.role).toUpperCase().includes("ADMIN") && (
         <button
@@ -66,10 +65,7 @@ export default function MainPage({
           {/* <p>
             현재 로그인: <b>{me.email}</b> ({me.role})
           </p> */}
-          <button
-            onClick={openMyPage}
-            style={{ padding: "10px 14px" }}
-          >
+          <button onClick={openMyPage} style={{ padding: "10px 14px" }}>
             마이페이지
           </button>
         </>
@@ -77,10 +73,16 @@ export default function MainPage({
         <>
           <p>로그인 또는 회원가입을 진행해주세요.</p>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => setAuthModal("login")} style={{ padding: "10px 14px" }}>
+            <button
+              onClick={() => setAuthModal("login")}
+              style={{ padding: "10px 14px" }}
+            >
               로그인
             </button>
-            <button onClick={() => setAuthModal("signup")} style={{ padding: "10px 14px" }}>
+            <button
+              onClick={() => setAuthModal("signup")}
+              style={{ padding: "10px 14px" }}
+            >
               회원가입
             </button>
           </div>
@@ -130,6 +132,6 @@ export default function MainPage({
           }}
         />
       )}
-    </div>
+    </PageContentWrapper>
   );
 }
