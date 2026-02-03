@@ -4,6 +4,7 @@ import { api } from "./api";
 import { useApiCall } from "./useApiCall";
 import PageContentWrapper from "./components/layout/PageContentWrapper";
 import SectionSpacer from "./components/layout/SectionSpacer";
+import ButtonStack from "./components/layout/ButtonStack";
 
 type VerifyResponse = { message: string };
 
@@ -63,11 +64,11 @@ export default function VerifyPage() {
       )}
 
       <SectionSpacer size="md" />
-      <div style={{ display: "flex", gap: 8 }}>
+      <ButtonStack>
         <button type="button" onClick={() => nav("/", { replace: true })}>
           로그인 하러 가기
         </button>
-      </div>
+      </ButtonStack>
     </PageContentWrapper>
   );
 }
