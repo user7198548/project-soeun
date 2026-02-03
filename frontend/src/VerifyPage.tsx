@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "./api";
 import { useApiCall } from "./useApiCall";
 import PageContentWrapper from "./components/layout/PageContentWrapper";
+import SectionSpacer from "./components/layout/SectionSpacer";
 
 type VerifyResponse = { message: string };
 
@@ -38,15 +39,18 @@ export default function VerifyPage() {
 
   return (
     <PageContentWrapper maxWidth="520px" marginTop="40px" padding="16px">
-      <h2 style={{ marginBottom: 12 }}>이메일 인증</h2>
+      <h2>이메일 인증</h2>
+      <SectionSpacer size="md" />
 
       {busy && <p>인증 처리 중입니다...</p>}
 
       {!busy && error && (
         <div style={{ padding: 12, border: "1px solid #ddd", borderRadius: 8 }}>
           <p style={{ margin: 0 }}>인증에 실패했습니다.</p>
-          <p style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>{error}</p>
-          <p style={{ marginTop: 8, color: "#666" }}>
+          <SectionSpacer size="sm" />
+          <p style={{ whiteSpace: "pre-wrap" }}>{error}</p>
+          <SectionSpacer size="sm" />
+          <p style={{ color: "#666" }}>
             링크가 만료되었거나 이미 사용된 링크일 수 있습니다.
           </p>
         </div>
@@ -58,7 +62,8 @@ export default function VerifyPage() {
         </div>
       )}
 
-      <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+      <SectionSpacer size="md" />
+      <div style={{ display: "flex", gap: 8 }}>
         <button type="button" onClick={() => nav("/", { replace: true })}>
           로그인 하러 가기
         </button>

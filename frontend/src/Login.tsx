@@ -2,6 +2,7 @@ import { useState } from "react";
 import { api } from "./api";
 import { useApiCall } from "./useApiCall";
 import PageContentWrapper from "./components/layout/PageContentWrapper";
+import SectionSpacer from "./components/layout/SectionSpacer";
 
 type Errors = {
   email?: string;
@@ -80,7 +81,7 @@ export default function Login({
 
   return (
     <PageContentWrapper maxWidth="420px">
-      <div style={{ marginBottom: 12 }}>
+      <div>
         <button
           type="button"
           onClick={() => onGoHome?.()}
@@ -95,10 +96,11 @@ export default function Login({
           Home
         </button>
       </div>
+      <SectionSpacer size="md" />
 
       <h2>로그인</h2>
       <form onSubmit={submit}>
-        <div style={{ marginBottom: 12 }}>
+        <div>
           <div>이메일</div>
           <input
             value={email}
@@ -112,8 +114,9 @@ export default function Login({
             </div>
           )} */}
         </div>
+        <SectionSpacer size="md" />
 
-        <div style={{ marginBottom: 12 }}>
+        <div>
           <div>비밀번호</div>
           <input
             type="password"
@@ -128,6 +131,7 @@ export default function Login({
             </div>
           )} */}
         </div>
+        <SectionSpacer size="md" />
 
         <button
           type="submit"
@@ -143,33 +147,41 @@ export default function Login({
         </button>
 
         {error && (
-          <p style={{ marginTop: 12 }}>
-            <p style={{ color: "red", margin: 0 }}>{error}</p>
+          <>
+            <SectionSpacer size="md" />
+            <p>
+              <p style={{ color: "red", margin: 0 }}>{error}</p>
 
-            {needEmailVerify && (
-              <div style={{ marginTop: 8 }}>
-                <p style={{ color: "#666", margin: "6px 0 10px" }}>
-                  가입한 이메일로 발송된 인증 링크를 클릭한 후 다시
-                  로그인해주세요. 메일을 못 받으셨다면 아래 버튼으로 재전송할 수
-                  있어요.
-                </p>
+              {needEmailVerify && (
+                <>
+                  <SectionSpacer size="sm" />
+                  <div>
+                    <p style={{ color: "#666", margin: "6px 0 10px" }}>
+                      가입한 이메일로 발송된 인증 링크를 클릭한 후 다시
+                      로그인해주세요. 메일을 못 받으셨다면 아래 버튼으로
+                      재전송할 수 있어요.
+                    </p>
 
-                <button
-                  type="button"
-                  //onClick={resendVerification}
-                  disabled={busy || !email.trim()}
-                  style={{
-                    padding: "8px 12px",
-                    backgroundColor: busy || !email.trim() ? "#ccc" : "#111827",
-                    color: busy || !email.trim() ? "#666" : "#fff",
-                    cursor: busy || !email.trim() ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {busy ? "전송 중..." : "인증 메일 재전송"}
-                </button>
-              </div>
-            )}
-          </p>
+                    <button
+                      type="button"
+                      //onClick={resendVerification}
+                      disabled={busy || !email.trim()}
+                      style={{
+                        padding: "8px 12px",
+                        backgroundColor:
+                          busy || !email.trim() ? "#ccc" : "#111827",
+                        color: busy || !email.trim() ? "#666" : "#fff",
+                        cursor:
+                          busy || !email.trim() ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      {busy ? "전송 중..." : "인증 메일 재전송"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </p>
+          </>
         )}
 
         <hr style={{ margin: "16px 0" }} />
