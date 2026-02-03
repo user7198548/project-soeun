@@ -11,6 +11,10 @@ import type {
 } from "./components/users/types";
 import { UserListTable } from "./components/users/UserListTable";
 import { UserPagination } from "./components/users/UserPagination";
+import {
+  UsersPageContainer,
+  UsersPageHeader,
+} from "./pages/UsersPage/UsersPage.styles";
 
 function buildQuery(params: Record<string, string | undefined>) {
   const qs = new URLSearchParams();
@@ -143,17 +147,17 @@ export default function UsersPage({ me }: { me: MeResponse }) {
 
   if (me.role !== "ADMIN") {
     return (
-      <div style={{ padding: 24, fontFamily: "sans-serif" }}>
+      <UsersPageContainer>
         <h2>Users</h2>
         <p style={{ color: "red" }}>관리자만 접근 가능합니다.</p>
-      </div>
+      </UsersPageContainer>
     );
   }
 
   return (
     <>
-      <div style={{ padding: 24, fontFamily: "sans-serif" }}>
-        <h2 style={{ marginTop: 0 }}>회원 목록</h2>
+      <UsersPageContainer>
+        <UsersPageHeader>회원 목록</UsersPageHeader>
 
         <UserSearchForm
           initialFilters={{ email, name, role, from, to }}
@@ -195,7 +199,7 @@ export default function UsersPage({ me }: { me: MeResponse }) {
             }}
           />
         )}
-      </div>
+      </UsersPageContainer>
     </>
   );
 }
