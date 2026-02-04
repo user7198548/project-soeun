@@ -73,16 +73,10 @@ export const UserSearchForm: React.FC<UserSearchFormProps> = ({
         }}
       >
         <FormField label="email" marginBottom="0">
-          <TextInput
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <TextInput value={email} onChange={(e) => setEmail(e.target.value)} />
         </FormField>
         <FormField label="name" marginBottom="0">
-          <TextInput
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <TextInput value={name} onChange={(e) => setName(e.target.value)} />
         </FormField>
         <FormField label="role" marginBottom="0">
           <select
