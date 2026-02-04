@@ -469,4 +469,95 @@ com.soeun.project_soeun
 
 ---
 
+## 2026-02-03 (화) — UsersPage 구조 리팩터링 및 UI 공통 컴포넌트 도입
+
+### 오늘 목표
+
+* UsersPage의 과도하게 집중된 책임을 컴포넌트 단위로 분리
+* 스타일/레이아웃 구조를 정리하여 유지보수성 개선
+* 페이지 및 폼 UI에서 반복되는 패턴을 분석하고 공통 컴포넌트 도입 기준 수립
+
+---
+
+### 진행한 작업
+
+### 1) UsersPage 역할 분리 및 컴포넌트 구조 개선
+
+* UsersPage가 담당하던 복합 책임을 다음과 같이 분리
+
+  * 검색 필터 UI → `UserSearchForm`
+  * 사용자 목록 렌더링 → `UserListTable`, `UserListItem`
+  * 페이지네이션 UI → `UserPagination`
+* UsersPage는 **컨테이너 컴포넌트**로서 상태 관리 및 API 호출 담당, 하위 컴포넌트에서 발생한 이벤트 관리
+* props 기반 데이터/이벤트 흐름을 명확히 하여 재사용 가능 구조로 정리
+
+---
+
+### 2) 타입 정의 분리 및 타입 안정성 개선
+
+* UsersPage 및 사용자 관련 컴포넌트에서 사용되는 타입들을 `components/users/types.ts`로 분리
+
+  * `UserFilters`
+  * `UserListItemResponse`
+  * `Page<T>`
+  * `MeResponse`
+* `verbatimModuleSyntax` 설정에 맞춰 type-only import 적용
+* 타입 불일치로 인한 런타임 오류 및 빌드 에러 해결
+
+---
+
+### 3) UsersPage 스타일 및 레이아웃 컴포넌트화
+
+* UsersPage 내 인라인 스타일을 제거하고 styled-components 기반으로 분리
+* 페이지 전용 스타일을 `UsersPage.styles.ts`로 이동
+
+  * `UsersPageContainer`
+  * `UsersPageHeader`
+  * 리스트/페이지네이션 래퍼 컴포넌트
+* 로직 변경 없이 **UI 구조와 동작을 동일하게 유지**한 상태에서 스타일만 정리
+
+---
+
+### 4) 공통 레이아웃 컴포넌트 도입
+
+* 여러 페이지에서 반복되던 상위 레이아웃 패턴을 분석
+* `PageContentWrapper` 공용 컴포넌트 도입
+
+  * padding, max-width, 중앙 정렬 등 페이지 레벨 레이아웃 책임 통합
+* Login / Main / Verify / UsersPage 등에서 공통 적용 가능함을 확인
+
+---
+
+### 5) Spacing 공통화 및 SectionSpacer 적용 검토
+
+* `SectionSpacer` 공용 컴포넌트 도입
+
+  * 수직 간격(spacing)을 의미적으로 표현하기 위한 레이아웃 컴포넌트
+* Login, Verify 페이지에서는 기존 margin 스타일을 Spacer로 대체
+* 공용 컴포넌트는 “필요한 곳에만 적용”한다는 기준을 명확히 함
+
+---
+
+### 6) 폼(Form) UI 공통 컴포넌트 후보 분석
+
+* Login / Verify / UserSearchForm을 기준으로 반복 패턴 분석
+* 다음 3가지 공통 컴포넌트 후보를 도출
+
+  * `FormField` — 라벨 + 입력 필드 레이아웃 래퍼
+  * `ButtonStack` — 가로 정렬 버튼 그룹 레이아웃
+  * `ActionButton` — variant 기반 공통 버튼
+* 레이아웃 → 스타일 순으로 단계적 도입이 적절하다고 판단
+* 과도한 추상화를 피하기 위해 **ButtonStack → FormField → ActionButton** 순서로 진행하기로 결정
+
+---
+
+### 정리
+
+* UsersPage를 중심으로 **컴포넌트 책임 분리 + 스타일 구조 정리**를 완료
+* 공통 컴포넌트 도입 시 “무조건 재사용”이 아닌 **대체 가능한 패턴이 있는 경우에만 적용**한다는 기준을 확립
+* 레이아웃 → 폼 → 버튼으로 이어지는 UI 공통화 로드맵을 명확히 정리
+* 이후에는 `ButtonStack`, `FormField`부터 단계적으로 공통 컴포넌트화를 진행할 예정
+
+---
+
 
