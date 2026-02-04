@@ -5,6 +5,7 @@ import { useApiCall } from "./useApiCall";
 import PageContentWrapper from "./components/layout/PageContentWrapper";
 import SectionSpacer from "./components/layout/SectionSpacer";
 import ButtonStack from "./components/layout/ButtonStack";
+import ActionButton from "./components/ui/ActionButton";
 
 type VerifyResponse = { message: string };
 
@@ -65,9 +66,9 @@ export default function VerifyPage() {
 
       <SectionSpacer size="md" />
       <ButtonStack>
-        <button type="button" onClick={() => nav("/", { replace: true })}>
+        <ActionButton type="button" onClick={() => nav("/", { replace: true })} variant="link">
           로그인 하러 가기
-        </button>
+        </ActionButton>
       </ButtonStack>
     </PageContentWrapper>
   );

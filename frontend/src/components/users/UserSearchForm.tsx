@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import type { UserFilters } from "./types";
+import FormField from "../../components/form/FormField";
+import ActionButton from "../../components/ui/ActionButton";
 
 interface UserSearchFormProps {
   initialFilters: UserFilters;
@@ -63,39 +65,37 @@ export const UserSearchForm: React.FC<UserSearchFormProps> = ({
     >
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 180px",
+          display: "flex",
+          //gridTemplateColumns: "1fr 1fr 180px",
           gap: 10,
+          alignItems: "end",
         }}
       >
-        <div>
-          <div style={{ fontSize: 12, color: "#555" }}>email</div>
+        <FormField label="email" marginBottom="0">
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={{ width: "100%", padding: 8 }}
+            style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
           />
-        </div>
-        <div>
-          <div style={{ fontSize: 12, color: "#555" }}>name</div>
+        </FormField>
+        <FormField label="name" marginBottom="0">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            style={{ width: "100%", padding: 8 }}
+            style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
           />
-        </div>
-        <div>
-          <div style={{ fontSize: 12, color: "#555" }}>role</div>
+        </FormField>
+        <FormField label="role" marginBottom="0">
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            style={{ width: "100%", padding: 8 }}
+            style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
           >
             <option value="">ALL</option>
             <option value="ADMIN">ADMIN</option>
             <option value="USER">USER</option>
           </select>
-        </div>
+        </FormField>
       </div>
 
       <div
@@ -124,15 +124,15 @@ export const UserSearchForm: React.FC<UserSearchFormProps> = ({
           />
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "end" }}>
-          <button type="submit" disabled={busy}>
+          <ActionButton type="submit" disabled={busy} variant="secondary">
             {busy ? "검색중..." : "검색"}
-          </button>
-          <button type="button" onClick={handleReset} disabled={busy}>
+          </ActionButton>
+          <ActionButton type="button" onClick={handleReset} disabled={busy} variant="secondary">
             초기화
-          </button>
-          <button type="button" onClick={handleRefresh} disabled={busy}>
+          </ActionButton>
+          <ActionButton type="button" onClick={handleRefresh} disabled={busy} variant="secondary">
             새로고침
-          </button>
+          </ActionButton>
         </div>
       </div>
       {errorMessage && (
