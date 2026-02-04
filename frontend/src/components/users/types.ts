@@ -27,3 +27,7 @@ export type Page<T> = {
   size: number;
 };
 
+export type SortDir = "asc" | "desc";
+export type OnSortFunction = (key: string) => void;
+
+

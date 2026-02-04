@@ -38,6 +38,10 @@ export default function UsersPage({ me }: { me: MeResponse }) {
   const [from, setFrom] = useState(""); // YYYY-MM-DD
   const [to, setTo] = useState("");
 
+  // sorting
+  const [sortKey, setSortKey] = useState("createdAt");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
   // paging
   const [page, setPage] = useState(0);
   const size = 10;
@@ -55,8 +59,9 @@ export default function UsersPage({ me }: { me: MeResponse }) {
         role,
         from,
         to,
+        sort: `${sortKey},${sortDir}`,
       }),
-    [page, size, email, name, role, from, to],
+    [page, size, email, name, role, from, to, sortKey, sortDir],
   );
 
   const validateDateRange = useCallback(() => {
@@ -88,6 +93,19 @@ export default function UsersPage({ me }: { me: MeResponse }) {
     });
     if (res) setData(res);
   }, [setError, validateDateRange, run, queryString, setData]);
+
+  const handleSort = useCallback(
+    (key: string) => {
+      setPage(0); // Reset page on sort change
+      if (sortKey === key) {
+        setSortDir((prevDir) => (prevDir === "asc" ? "desc" : "asc"));
+      } else {
+        setSortKey(key);
+        setSortDir(key === "createdAt" ? "desc" : "asc"); // Default desc for createdAt, asc for others
+      }
+    },
+    [sortKey],
+  );
 
   useEffect(() => {
     //console.log("effect fired", { page });
@@ -184,6 +202,9 @@ export default function UsersPage({ me }: { me: MeResponse }) {
               busyId={busyId}
               onUserClick={openDetail}
               onToggleActive={setActive}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={handleSort}
             />
           </>
         )}

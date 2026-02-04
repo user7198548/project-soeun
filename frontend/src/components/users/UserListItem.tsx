@@ -16,6 +16,8 @@ export const UserListItem: React.FC<UserListItemProps> = ({
   onClick,
   onToggleActive,
 }) => {
+  const blocked = !user.active;
+
   return (
     <div
       key={user.id}
@@ -34,6 +36,22 @@ export const UserListItem: React.FC<UserListItemProps> = ({
       <div style={{ minWidth: 0 }}>
         <div style={{ fontWeight: 700 }}>
           #{user.id} {user.name} ({user.role})
+          {blocked && (
+            <span
+              style={{
+                fontSize: 12,
+                padding: "2px 6px",
+                borderRadius: 6,
+                backgroundColor: "#ffecec",
+                color: "#d32f2f",
+                fontWeight: 700,
+                lineHeight: 1.2,
+                whiteSpace: "nowrap",
+              }}
+            >
+              차단
+            </span>
+          )}
         </div>
         {/* <div style={{ fontSize: 14, color: "#555" }}>{user.email}</div> */}
         {/* active: <b>{String(user.active)}</b> */}
