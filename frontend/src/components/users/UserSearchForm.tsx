@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import type { UserFilters } from "./types";
 import FormField from "../../components/form/FormField";
 import ActionButton from "../../components/ui/ActionButton";
+import TextInput from "../../components/form/TextInput";
 
 interface UserSearchFormProps {
   initialFilters: UserFilters;
@@ -72,17 +73,15 @@ export const UserSearchForm: React.FC<UserSearchFormProps> = ({
         }}
       >
         <FormField label="email" marginBottom="0">
-          <input
+          <TextInput
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
           />
         </FormField>
         <FormField label="name" marginBottom="0">
-          <input
+          <TextInput
             value={name}
             onChange={(e) => setName(e.target.value)}
-            style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
           />
         </FormField>
         <FormField label="role" marginBottom="0">
@@ -107,20 +106,18 @@ export const UserSearchForm: React.FC<UserSearchFormProps> = ({
       >
         <div>
           <div style={{ fontSize: 12, color: "#555" }}>from</div>
-          <input
+          <TextInput
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            style={{ width: "100%", padding: 8 }}
           />
         </div>
         <div>
           <div style={{ fontSize: 12, color: "#555" }}>to</div>
-          <input
+          <TextInput
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            style={{ width: "100%", padding: 8 }}
           />
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "end" }}>
