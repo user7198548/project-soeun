@@ -5,6 +5,7 @@ import Login from "./Login";
 import Signup from "./Signup";
 import UserDetailModal from "./UserDetailPage";
 import PageContentWrapper from "./components/layout/PageContentWrapper";
+import ActionButton from "./components/ui/ActionButton";
 
 type MeResponse = {
   id: number;
@@ -52,39 +53,39 @@ export default function MainPage({
     <PageContentWrapper>
       <h1>메인 화면</h1>
       {me && String(me.role).toUpperCase().includes("ADMIN") && (
-        <button
+        <ActionButton
           type="button"
           onClick={() => navigate("/users")}
-          style={{ padding: "10px 14px" }}
+          variant="primary"
         >
           유저목록(/users)
-        </button>
+        </ActionButton>
       )}
       {me ? (
         <>
           {/* <p>
             현재 로그인: <b>{me.email}</b> ({me.role})
           </p> */}
-          <button onClick={openMyPage} style={{ padding: "10px 14px" }}>
+          <ActionButton onClick={openMyPage} variant="primary">
             마이페이지
-          </button>
+          </ActionButton>
         </>
       ) : (
         <>
           <p>로그인 또는 회원가입을 진행해주세요.</p>
           <div style={{ display: "flex", gap: 8 }}>
-            <button
+            <ActionButton
               onClick={() => setAuthModal("login")}
-              style={{ padding: "10px 14px" }}
+              variant="primary"
             >
               로그인
-            </button>
-            <button
+            </ActionButton>
+            <ActionButton
               onClick={() => setAuthModal("signup")}
-              style={{ padding: "10px 14px" }}
+              variant="primary"
             >
               회원가입
-            </button>
+            </ActionButton>
           </div>
         </>
       )}
