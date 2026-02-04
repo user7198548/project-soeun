@@ -3,6 +3,7 @@ import { api } from "./api";
 import { useApiCall } from "./useApiCall";
 import PageContentWrapper from "./components/layout/PageContentWrapper";
 import SectionSpacer from "./components/layout/SectionSpacer";
+import ActionButton from "./components/ui/ActionButton";
 
 type Errors = {
   email?: string;
@@ -12,7 +13,6 @@ type Errors = {
 export default function Login({
   onSuccess,
   onGoSignup,
-  onGoHome,
 }: {
   onSuccess: () => Promise<void>;
   onGoSignup?: () => void;
@@ -28,9 +28,9 @@ export default function Login({
 
   const validateEmail = (v: string) => {
     if (!v) return "이메일은 필수 입력 항목입니다.";
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(v)) return "유효하지 않은 이메일 형식입니다.";
-    return undefined;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // if (!emailRegex.test(v)) return "유효하지 않은 이메일 형식입니다.";
+    // return undefined;
   };
 
   const validatePassword = (v: string) => {
@@ -81,27 +81,10 @@ export default function Login({
 
   return (
     <PageContentWrapper maxWidth="420px">
-      <div>
-        <button
-          type="button"
-          onClick={() => onGoHome?.()}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "#3366ff",
-            cursor: "pointer",
-            padding: 0,
-          }}
-        >
-          Home
-        </button>
-      </div>
       <SectionSpacer size="md" />
 
-      <h2>로그인</h2>
       <form onSubmit={submit}>
         <div>
-          <div>이메일</div>
           <input
             value={email}
             placeholder="이메일"
@@ -117,7 +100,6 @@ export default function Login({
         <SectionSpacer size="md" />
 
         <div>
-          <div>비밀번호</div>
           <input
             type="password"
             placeholder="********"
@@ -133,18 +115,13 @@ export default function Login({
         </div>
         <SectionSpacer size="md" />
 
-        <button
+        <ActionButton
           type="submit"
           disabled={!isFormValid || busy}
-          style={{
-            padding: "8px 12px",
-            backgroundColor: !isFormValid || busy ? "#ccc" : "#3366ff",
-            color: !isFormValid || busy ? "#666" : "#fff",
-            cursor: !isFormValid || busy ? "not-allowed" : "pointer",
-          }}
+          variant="primary"
         >
           {busy ? "로그인중..." : "로그인"}
-        </button>
+        </ActionButton>
 
         {error && (
           <>
@@ -185,13 +162,13 @@ export default function Login({
         )}
 
         <hr style={{ margin: "16px 0" }} />
-        <button
+        <ActionButton
           type="button"
           onClick={() => onGoSignup?.()}
-          style={{ background: "transparent", color: "#3366ff" }}
+          variant="link"
         >
           아직 계정이 없으신가요? 회원가입
-        </button>
+        </ActionButton>
       </form>
     </PageContentWrapper>
   );
