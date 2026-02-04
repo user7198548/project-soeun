@@ -23,7 +23,7 @@ export const UserListItem: React.FC<UserListItemProps> = ({
       style={{
         border: "1px solid #ddd",
         borderRadius: 12,
-        padding: 12,
+        padding: 6,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -35,10 +35,8 @@ export const UserListItem: React.FC<UserListItemProps> = ({
         <div style={{ fontWeight: 700 }}>
           #{user.id} {user.name} ({user.role})
         </div>
-        {/* <div style={{ fontSize: 14, color: "#555" }}>{user.email}</div>
-        <div style={{ fontSize: 12, color: "#777" }}>
-          active: <b>{String(user.active)}</b>
-        </div> */}
+        {/* <div style={{ fontSize: 14, color: "#555" }}>{user.email}</div> */}
+        {/* active: <b>{String(user.active)}</b> */}
       </div>
 
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>

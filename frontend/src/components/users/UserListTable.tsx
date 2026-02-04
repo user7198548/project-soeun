@@ -21,7 +21,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     <div
       style={{
         maxHeight: "calc(100vh - 260px)", // 기존 UsersPage의 스타일 유지
-        overflowY: "auto",
+        //overflowY: "auto", //스크롤 겹침
         paddingRight: 6,
       }}
     >

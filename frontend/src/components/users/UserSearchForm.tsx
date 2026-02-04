@@ -127,10 +127,20 @@ export const UserSearchForm: React.FC<UserSearchFormProps> = ({
           <ActionButton type="submit" disabled={busy} variant="secondary">
             {busy ? "검색중..." : "검색"}
           </ActionButton>
-          <ActionButton type="button" onClick={handleReset} disabled={busy} variant="secondary">
+          <ActionButton
+            type="button"
+            onClick={handleReset}
+            disabled={busy}
+            variant="secondary"
+          >
             초기화
           </ActionButton>
-          <ActionButton type="button" onClick={handleRefresh} disabled={busy} variant="secondary">
+          <ActionButton
+            type="button"
+            onClick={handleRefresh}
+            disabled={busy}
+            variant="secondary"
+          >
             새로고침
           </ActionButton>
         </div>

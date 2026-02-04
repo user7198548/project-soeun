@@ -4,6 +4,7 @@ import { useApiCall } from "./useApiCall";
 import PageContentWrapper from "./components/layout/PageContentWrapper";
 import SectionSpacer from "./components/layout/SectionSpacer";
 import ActionButton from "./components/ui/ActionButton";
+import TextInput from "./components/form/TextInput";
 
 type Errors = {
   email?: string;
@@ -26,46 +27,26 @@ export default function Login({
   const [errors, setErrors] = useState<Errors>({});
   const needEmailVerify = error?.includes("이메일 인증");
 
-  const validateEmail = (v: string) => {
-    if (!v) return "이메일은 필수 입력 항목입니다.";
-    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    // if (!emailRegex.test(v)) return "유효하지 않은 이메일 형식입니다.";
-    // return undefined;
-  };
-
-  const validatePassword = (v: string) => {
-    if (!v) return "비밀번호는 필수 입력 항목입니다.";
-    return undefined;
-  };
-
   const onEmailChange = (v: string) => {
     setEmail(v);
-    setErrors((prev) => ({ ...prev, email: validateEmail(v.trim()) }));
   };
 
   const onPasswordChange = (v: string) => {
     setPassword(v);
-    setErrors((prev) => ({ ...prev, password: validatePassword(v) }));
   };
 
-  const isFormValid =
-    email.trim() && password && !errors.email && !errors.password;
+  const isFormValid = email.trim() && password;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const emailErr = validateEmail(email.trim());
-    const pwErr = validatePassword(password);
-
-    setErrors({ email: emailErr, password: pwErr });
-    if (emailErr || pwErr) return;
-
-    const nextErrors: Errors = {
-      email: validateEmail(email.trim()),
-      password: validatePassword(password),
-    };
-    setErrors(nextErrors);
-    if (Object.values(nextErrors).some(Boolean)) return;
+    if (!email.trim() || !password) {
+      setErrors({
+        email: !email.trim() ? "이메일을 입력해주세요." : undefined,
+        password: !password ? "비밀번호를 입력해주세요." : undefined,
+      });
+      return;
+    }
 
     const ok = await run(async () => {
       await api<void>("/api/auth/login", {
@@ -85,27 +66,27 @@ export default function Login({
 
       <form onSubmit={submit}>
         <div>
-          <input
+          <TextInput
             value={email}
             placeholder="이메일"
             onChange={(e) => onEmailChange(e.target.value)}
-            style={{ width: "100%", padding: 8 }}
+            // error={!!errors.email}
           />
-          {/* {errors.email && (
+          {errors.email && (
             <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
               {errors.email}
             </div>
-          )} */}
+          )}
         </div>
         <SectionSpacer size="md" />
 
         <div>
-          <input
+          <TextInput
             type="password"
             placeholder="********"
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
-            style={{ width: "100%", padding: 8 }}
+            // error={!!errors.password}
           />
           {/* {errors.password && (
             <div style={{ color: "red", fontSize: 12, marginTop: 4 }}>
