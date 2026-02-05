@@ -15,6 +15,9 @@ import {
   UsersPageContainer,
   UsersPageHeader,
 } from "./pages/UsersPage/UsersPage.styles";
+import ButtonStack from "./components/layout/ButtonStack"; // New import
+import ActionButton from "./components/ui/ActionButton"; // New import
+import SectionSpacer from "./components/layout/SectionSpacer"; // New import
 
 function buildQuery(params: Record<string, string | undefined>) {
   const qs = new URLSearchParams();
@@ -42,11 +45,31 @@ export default function UsersPage({ me }: { me: MeResponse }) {
   const [sortKey, setSortKey] = useState("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
+  // multi-selection
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(
+    new Set(),
+  );
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+
   // paging
   const [page, setPage] = useState(0);
-  const size = 10;
+  const size = 20;
 
   const [data, setData] = useState<Page<UserListItemResponse> | null>(null);
+
+  const { hasActiveSelected, hasInactiveSelected } = useMemo(() => {
+    const selectedUsers =
+      data?.content?.filter((user) => selectedUserIds.has(user.id)) || [];
+    const activeUsersCount = selectedUsers.filter((user) => user.active).length;
+    const inactiveUsersCount = selectedUsers.filter(
+      (user) => !user.active,
+    ).length;
+
+    return {
+      hasActiveSelected: activeUsersCount > 0,
+      hasInactiveSelected: inactiveUsersCount > 0,
+    };
+  }, [selectedUserIds, data?.content]);
   // const navigate = useNavigate();
 
   const queryString = useMemo(
@@ -107,6 +130,131 @@ export default function UsersPage({ me }: { me: MeResponse }) {
     [sortKey],
   );
 
+  const handleSelectUser = useCallback((userId: number, checked: boolean) => {
+    setSelectedUserIds((prev) => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(userId);
+      } else {
+        newSet.delete(userId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleSelectAllUsers = useCallback(
+    (checked: boolean) => {
+      setSelectedUserIds((prev) => {
+        if (checked && data?.content) {
+          return new Set(data.content.map((user) => user.id));
+        } else {
+          return new Set();
+        }
+      });
+    },
+    [data?.content],
+  );
+
+  const handleBulkDeactivate = useCallback(async () => {
+    if (selectedUserIds.size === 0) return;
+    setError("");
+    setBulkProcessing(true); // Set bulk processing state
+
+    try {
+      const usersToDeactivate = Array.from(selectedUserIds).filter((userId) => {
+        const user = data?.content?.find((u) => u.id === userId);
+        return user && user.active === true; // Only deactivate if currently active
+      });
+
+      if (usersToDeactivate.length === 0) {
+        setError("선택된 사용자 중 비활성화할 대상이 없습니다.");
+        setSelectedUserIds(new Set());
+        return;
+      }
+
+      const promises = usersToDeactivate.map((userId) =>
+        api<void>(`/api/users/${userId}/active`, {
+          method: "PATCH",
+          body: JSON.stringify({ active: false }),
+        }),
+      );
+
+      const results = await run(() => Promise.allSettled(promises));
+
+      let failedIds: number[] = [];
+      if (results) {
+        results.forEach((result, index) => {
+          if (result.status === "rejected") {
+            failedIds.push(usersToDeactivate[index]);
+          }
+        });
+      }
+
+      if (failedIds.length > 0) {
+        const failedIdsPreview = failedIds.slice(0, 5).join(", ");
+        setError(
+          `일부 비활성화 처리 실패 (${failedIds.length}건): ${failedIdsPreview}`,
+        );
+      } else {
+        setError(""); // Clear error on success
+      }
+      setSelectedUserIds(new Set()); // Clear selection
+      await load(); // Reload data
+    } finally {
+      setBulkProcessing(false); // Reset bulk processing state
+    }
+  }, [selectedUserIds, setError, setBulkProcessing, run, load, data?.content]);
+
+  const handleBulkActivate = useCallback(async () => {
+    if (selectedUserIds.size === 0) return;
+    setError("");
+    setBulkProcessing(true); // Set bulk processing state
+
+    try {
+      const usersToActivate = Array.from(selectedUserIds).filter((userId) => {
+        const user = data?.content?.find((u) => u.id === userId);
+        return user && user.active === false; // Only activate if currently inactive
+      });
+
+      if (usersToActivate.length === 0) {
+        setError("선택된 사용자 중 활성화할 대상이 없습니다.");
+        setSelectedUserIds(new Set());
+        return;
+      }
+
+      const promises = usersToActivate.map((userId) =>
+        api<void>(`/api/users/${userId}/active`, {
+          method: "PATCH",
+          body: JSON.stringify({ active: true }),
+        }),
+      );
+
+      const results = await run(() => Promise.allSettled(promises));
+
+      let failedIds: number[] = [];
+      if (results) {
+        results.forEach((result, index) => {
+          if (result.status === "rejected") {
+            failedIds.push(usersToActivate[index]);
+          }
+        });
+      }
+
+      if (failedIds.length > 0) {
+        const failedIdsPreview = failedIds.slice(0, 5).join(", ");
+        setError(
+          `일부 활성화 처리 실패 (${failedIds.length}건): ${failedIdsPreview}`,
+        );
+      } else {
+        setError(""); // Clear error on success
+      }
+      setSelectedUserIds(new Set()); // Clear selection
+      await load(); // Reload data
+    } finally {
+      setBulkProcessing(false); // Reset bulk processing state
+    }
+  }, [selectedUserIds, setError, setBulkProcessing, run, load, data?.content]);
+
   useEffect(() => {
     //console.log("effect fired", { page });
     // ADMIN만 조회 가능
@@ -127,6 +275,7 @@ export default function UsersPage({ me }: { me: MeResponse }) {
     if (!validateDateRange()) return;
 
     setPage(0);
+    setSelectedUserIds(new Set()); // Clear selection on search
     //await load();
   };
   const handleReset = async () => {
@@ -137,6 +286,7 @@ export default function UsersPage({ me }: { me: MeResponse }) {
     setFrom("");
     setTo("");
     setPage(0);
+    setSelectedUserIds(new Set()); // Clear selection on reset
     //await load();
   };
 
@@ -183,8 +333,44 @@ export default function UsersPage({ me }: { me: MeResponse }) {
           onReset={handleReset}
           onRefresh={load}
           busy={busy}
-          errorMessage={error} // UserSearchForm에서 자체적으로 에러 메시지를 표시하도록 변경
+          errorMessage={error}
         />
+        <SectionSpacer size="md" />
+
+        <ButtonStack gap="8px">
+          {hasActiveSelected && (
+            <ActionButton
+              variant="secondary"
+              onClick={handleBulkDeactivate}
+              disabled={busy || bulkProcessing}
+            >
+              {bulkProcessing
+                ? "처리중..."
+                : `선택 비활성화 (${selectedUserIds.size})`}
+            </ActionButton>
+          )}
+          {hasInactiveSelected && (
+            <ActionButton
+              variant="secondary"
+              onClick={handleBulkActivate}
+              disabled={busy || bulkProcessing}
+            >
+              {bulkProcessing
+                ? "처리중..."
+                : `선택 활성화 (${selectedUserIds.size})`}
+            </ActionButton>
+          )}
+          {selectedUserIds.size > 0 && ( // Always show clear selection if anything is selected
+            <ActionButton
+              variant="secondary"
+              onClick={() => setSelectedUserIds(new Set())}
+              disabled={busy || bulkProcessing}
+            >
+              선택 해제
+            </ActionButton>
+          )}
+        </ButtonStack>
+        <SectionSpacer size="md" />
 
         {!data ? (
           <p>{busy ? "로딩중..." : "데이터가 없습니다."}</p>
@@ -205,6 +391,14 @@ export default function UsersPage({ me }: { me: MeResponse }) {
               sortKey={sortKey}
               sortDir={sortDir}
               onSort={handleSort}
+              // New props for selection
+              selectedUserIds={selectedUserIds}
+              onSelectUser={handleSelectUser}
+              onSelectAllUsers={handleSelectAllUsers}
+              allUsersOnPageSelected={
+                data.content.length > 0 &&
+                data.content.every((u) => selectedUserIds.has(u.id))
+              }
             />
           </>
         )}

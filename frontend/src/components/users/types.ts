@@ -30,4 +30,7 @@ export type Page<T> = {
 export type SortDir = "asc" | "desc";
 export type OnSortFunction = (key: string) => void;
 
+export type SelectedUserIds = Set<number>;
+export type OnSelectUserFunction = (userId: number, checked: boolean) => void;
+
 

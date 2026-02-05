@@ -1,7 +1,13 @@
 // src/components/users/UserListTable.tsx
 
-import React from "react";
-import type { UserListItemResponse, SortDir, OnSortFunction } from "./types";
+import React, { useRef, useEffect } from "react";
+import type {
+  UserListItemResponse,
+  SortDir,
+  OnSortFunction,
+  SelectedUserIds,
+  OnSelectUserFunction,
+} from "./types";
 import { UserListItem } from "./UserListItem";
 
 interface UserListTableProps {
@@ -12,6 +18,11 @@ interface UserListTableProps {
   sortKey: string;
   sortDir: SortDir;
   onSort: OnSortFunction;
+  // New props for multi-selection
+  selectedUserIds: SelectedUserIds;
+  onSelectUser: OnSelectUserFunction;
+  allUsersOnPageSelected: boolean;
+  onSelectAllUsers: (checked: boolean) => void;
 }
 
 export const UserListTable: React.FC<UserListTableProps> = ({
@@ -22,6 +33,11 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   sortKey,
   sortDir,
   onSort,
+  // New props for multi-selection
+  selectedUserIds,
+  onSelectUser,
+  allUsersOnPageSelected,
+  onSelectAllUsers,
 }) => {
   const getSortIndicator = (key: string) => {
     if (sortKey === key) {
@@ -29,6 +45,16 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     }
     return "";
   };
+
+  const checkboxRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      const isAnySelected = users.some((u) => selectedUserIds.has(u.id));
+      checkboxRef.current.indeterminate =
+        isAnySelected && !allUsersOnPageSelected;
+    }
+  }, [selectedUserIds, allUsersOnPageSelected, users]);
 
   return (
     <div
@@ -41,7 +67,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1.5fr 1.5fr 1fr 1fr 1.5fr 0.5fr", // Email, Name, Role, Active, Created At, Actions
+          gridTemplateColumns: "40px 1.5fr 1.5fr 1fr 1fr 1.5fr 0.5fr", // Added 40px for checkbox
           gap: 8,
           padding: "8px 0",
           fontWeight: "bold",
@@ -49,6 +75,16 @@ export const UserListTable: React.FC<UserListTableProps> = ({
           marginBottom: "8px",
         }}
       >
+        <div style={{ paddingLeft: "8px" }}>
+          {" "}
+          {/* Checkbox column header */}
+          <input
+            type="checkbox"
+            checked={allUsersOnPageSelected}
+            onChange={(e) => onSelectAllUsers(e.target.checked)}
+            ref={checkboxRef}
+          />
+        </div>
         <div onClick={() => onSort("email")} style={{ cursor: "pointer" }}>
           Email{getSortIndicator("email")}
         </div>
@@ -58,8 +94,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         <div onClick={() => onSort("role")} style={{ cursor: "pointer" }}>
           Role{getSortIndicator("role")}
         </div>
-        <div onClick={() => onSort("isActive")} style={{ cursor: "pointer" }}>
-          Active{getSortIndicator("isActive")}
+        <div onClick={() => onSort("active")} style={{ cursor: "pointer" }}>
+          {" "}
+          {/* Corrected to 'active' */}
+          Active{getSortIndicator("active")}
         </div>
         <div onClick={() => onSort("createdAt")} style={{ cursor: "pointer" }}>
           Created At{getSortIndicator("createdAt")}
@@ -74,6 +112,9 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             isProcessing={busyId === u.id}
             onClick={onUserClick}
             onToggleActive={onToggleActive}
+            // New props for selection
+            isSelected={selectedUserIds.has(u.id)}
+            onSelect={onSelectUser}
           />
         ))}
       </div>
